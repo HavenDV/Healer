@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIAddon>
+	<AutoStart>true</AutoStart>
+	<Forms>
+		<Item>
+			<Id>Main</Id>
+			<Form href="Widgets/Form.xdb#xpointer(/WidgetForm)" />
+		</Item>
+		<Item>
+			<Id>Panel</Id>
+			<Form href="Widgets/Bars/Form.xdb#xpointer(/WidgetForm)" />
+		</Item>
+		<Item>
+			<Id>Buff</Id>
+			<Form href="Widgets/Buffs/Form.xdb#xpointer(/WidgetForm)" />
+		</Item>
+		<Item>
+			<Id>Template</Id>
+			<Form href="Widgets/Templates/Main.xdb#xpointer(/WidgetForm)" />
+		</Item>
+		<Item>
+			<Id>Form</Id>
+			<Form href="Widgets/Templates/Form.xdb#xpointer(/WidgetForm)" />
+		</Item>
+	</Forms>
+	<MainFormId>Main</MainFormId>
+	<Name>Healer</Name>
+	<localizedNameFileRef href="Resources/name" />
+	<localizedDescFileRef href="Resources/desc" />
+	<ScriptFileRefs>
+		<Item href="Scripts/LibDnD.lua" />
+		<Item href="Locales/main.lua" />
+		<Item href="Scripts/Utils.lua" />
+		<Item href="Scripts/mainscript.luac" />
+	</ScriptFileRefs>
+
+  <author>havendv</author>
+  <revision>55</revision>
+
+  <texts href="" />
+  <textures href="Widgets/Textures/Textures.xdb#xpointer(/UIRelatedTextures)" />
+  <update>2014-12-15 01:16:48</update>
+  <visObjects href="" />
+  <www>http://www.havendv.ru/</www>
+</UIAddon>

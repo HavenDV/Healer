@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<WidgetPanel>
+	<Name>Buff1</Name>
+	<Header>
+		<Prototype href="Buff/Buff.xdb#xpointer(/WidgetPanel)" />
+	</Header>
+	<Placement>
+		<X>
+			<Align>WIDGET_ALIGN_LOW</Align>
+			<Pos>2</Pos>
+		</X>
+		<Y>
+			<Align>WIDGET_ALIGN_LOW</Align>
+			<Pos>2</Pos>
+		</Y>
+	</Placement>
+</WidgetPanel>

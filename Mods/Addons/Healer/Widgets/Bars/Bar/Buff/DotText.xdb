@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<WidgetTextView>
+	<Name>DotText</Name>
+	<Priority>140</Priority>
+	<Placement>
+		<X>
+			<Align>WIDGET_ALIGN_HIGH</Align>
+			<Size>35</Size>
+			<HighPos>16</HighPos>
+		</X>
+		<Y>
+			<Align>WIDGET_ALIGN_HIGH</Align>
+			<Size>14</Size>
+			<HighPos>4</HighPos>
+		</Y>
+	</Placement>
+	<TransparentInput>true</TransparentInput>
+</WidgetTextView>

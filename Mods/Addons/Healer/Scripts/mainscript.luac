@@ -1,0 +1,2972 @@
+--------------------------------------------------------------------------------
+-- VALUES
+--------------------------------------------------------------------------------
+
+local classColors={
+	["WARRIOR"]		= { r = 143/255; g = 119/255; b = 075/255; a = 1 },
+	["PALADIN"]		= { r = 207/255; g = 220/255; b = 155/255; a = 1 },
+	["MAGE"]		= { r = 126/255; g = 159/255; b = 255/255; a = 1 },
+	["DRUID"]		= { r = 255/255; g = 118/255; b = 060/255; a = 1 },
+	["PSIONIC"]		= { r = 221/255; g = 123/255; b = 245/255; a = 1 },
+	["STALKER"]		= { r = 150/255; g = 204/255; b = 086/255; a = 1 },
+	["PRIEST"]		= { r = 255/255; g = 207/255; b = 123/255; a = 1 },
+	["NECROMANCER"]	= { r = 208/255; g = 069/255; b = 075/255; a = 1 },
+	["ENGINEER"]    = { r = 127/255; g = 128/255; b = 178/255; a = 1 },
+	["BARD"]		= { r = 51/255;  g = 230/255; b = 230/255; a = 1 },
+	["UNKNOWN"]		= { r = 127/255; g = 127/255; b = 127/255; a = 0 }
+}
+
+local manaColor=	{ r=0, g=0.3, b=1, a=1 }
+local energyColor= 	{ r=1, g=0.3, b=0, a=1 }
+local shieldColor= 	{ r=1, g=1, b=1, a=0.8 }
+
+local testDistance=40
+
+local debuffs={
+	{ name = "Тление души" },
+	{ name = "Сковывающий холод" }
+}
+
+local controls={
+	{ name = "Сугроб" },
+	{ name = "Сонное зелье" },
+	{ name = "Колыбельная" },
+	{ name = "Заноза" },
+	{ name = "Мир призраков" },
+	{ name = "Гипноз" },
+	{ name = "Парализующий луч" },
+	{ name = "Оцепенение" }
+}
+
+local mobs={
+	{ name = "Мученик" },
+	{ name = "Астральный защитник" },
+	{ name = "Деревянный барабанщик" },
+	{ name = "Глоб Бабах" },
+	{ name = "Доб Бабах" }
+}
+
+local binds={}
+binds["ncnsnaf"]	=	{ l="select",  	r="menu", 	u="", d="", m="" }
+binds["cnsnaf"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["ncsnaf"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["csnaf"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["ncnsaf"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["ncsaf"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["cnsaf"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["csaf"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["ncnsnae"]	=	{ l="target", 	r="menu",	u="", d="", m="" }
+binds["cnsnae"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["ncsnae"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["csnae"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["ncnsae"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["ncsae"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["cnsae"]		=	{ l="", 		r="",		u="", d="", m="" }
+binds["csae"]		=	{ l="", 		r="",		u="", d="", m="" }
+
+local ressurectName=""
+local testSpellName=""
+local buffName1=""
+local buffName2=""
+local buffName3=""
+local buffName4=""
+
+local priorityMode = false
+local numBars = 6
+local numGroup = 4
+local tank_priority = 20
+local debuff_priority = 30
+local mob_priority = 0
+local target_priority = 10000
+
+local selectBeforeCast = false
+local firstShow = false
+local classColorMode = false
+local autoDebuffMode = true
+local woundsShow = true
+
+local gorisontalMode = false
+local twoxtwoMode = false
+local shopMode = false
+
+local showMana = false
+local showEnergy = false
+local showShield = false
+local showGradient = true
+local showStandartRaid = true
+local showStandartParty = true
+local showClassIcon = true
+local showDistance = true
+local showProcent = true
+local showArrow = true
+
+local readyCheckMode=false
+local readyCheck=nil
+
+local targetShow=true
+local lastTargetShow=true
+local insertGroup=1
+
+local topPanelWidth = 200
+local topPanelHeight = 29
+local panelWidth = 200
+local panelHeight = 50
+
+local avatarBuffsWidthDefault=5
+local avatarBuffsHeightDefault=1
+local avatarBuffsSizeDefault=48
+local avatarBuffsTargetDefault="player"
+local avatarBuffsFixDefault=false
+local avatarBuffsTopWidth=120
+local avatarBuffsUpdateTime=0.1
+local avatarBuffs={}
+local avatarBuffsGroups={ 	{ name="1", w=2, h=2, size=48, target="player", fix=false, buffs={
+									{name="Стремление к тьме", cd=false, buff=true, time=60 }
+								}
+							}
+						}
+local avatarCDDefault=false
+local avatarBuffDefault=true
+local avatarTimeDefault=false
+
+local activeBuild=nil
+
+local shortMode=false
+local shortModeWidth=200
+
+
+-- Bosses and players
+local boss_units = {}
+local players = {}
+for i=0, numGroup-1 do players[i]={} end
+
+local detectedObjects = {}
+
+local needForUpdate={}
+
+-- Widgets and textures
+local texIcons = {}
+local texParty = {}
+local texCheckState = {}
+--local texCustomIcons = {}
+local wtTopPanel = nil
+local wtPartyButtons = {}
+local wtPlayerBars = nil
+local configForm = nil
+local configDebuffsForm = nil
+local configMobsForm = nil
+local configProfilesForm = nil
+local configBarsForm = nil
+local configControlsForm = nil
+local configBuffsForm = nil
+local configGroupBuffsForm = nil
+local panelForm = nil
+local template = nil
+local buffForm = nil
+
+local locale=getLocale()
+local aurasNames=locale["aurasNames"]
+
+local shopANames=locale["shopANames"]
+local shopDNames=locale["shopDNames"]
+local smallShopANames=locale["smallAShopNames"]
+local smallShopDNames=locale["smallDShopNames"]
+local foodWNames=locale["foodWNames"]
+local foodSNames=locale["foodSNames"]
+local elNames=locale["elNames"]
+
+-- Raid filter
+local raid_filter = { true, true, true, true }
+
+local profiles={
+	{ name = locale["build1Name"], sysName = "0", id=nil },
+	{ name = locale["build2Name"], sysName = "1", id=nil }
+}
+
+local activeBuildName=nil
+local loadProfiles=false
+
+--------------------------------------------------------------------------------
+-- Prototypes
+--------------------------------------------------------------------------------
+
+local setConfig = nil -- Загружает данные текущего профиля в настройки
+
+--------------------------------------------------------------------------------
+-- Buffs
+--------------------------------------------------------------------------------
+
+local function showBuff(widget, buffInfo, showStacksAlways, showBig, size, showIconOnly)
+	if not showBig then resize(widget, 34, nil) end
+	local dot=getChild(widget, "DotIcon")
+	local dotText=getChild(widget, "DotText")
+	local dotStackText=getChild(widget, "DotStackText")
+	if dot and buffInfo and buffInfo.texture then
+		show(dot)
+		setBackgroundTexture(dot, buffInfo.texture)
+		local showTime=not showIconOnly and (buffInfo.remainingMs and buffInfo.remainingMs>0 and (showBig or buffInfo.remainingMs<100000))
+		local showStack=not showIconOnly and (showStacksAlways or buffInfo.isStackable and buffInfo.stackLimit>1 and buffInfo.stackCount<100)
+		if showTime then
+			if showBig then
+				setText(dotText, getTimeString(buffInfo.remainingMs), "ColorWhite", "center", math.floor((size or avatarBuffsSizeDefault)/2.5), 1, 1)
+			else
+				setText(dotText, math.floor(buffInfo.remainingMs/1000), nil, "right")
+			end
+			show(dotText)
+		else
+			hide(dotText)
+			if not showBig then resize(widget, 16, nil) end
+		end
+
+		if showStack then
+			local stackSmall=buffInfo.stackCount<10
+			if showBig then
+				setText(dotStackText, buffInfo.stackCount, "ColorWhite", "right", math.floor((size or avatarBuffsSizeDefault)/2.5), 1, 1)
+			else
+				setText(dotStackText, buffInfo.stackCount, nil, "right")
+			end
+			show(dotStackText)
+			if not showBig then
+				resize(dotStackText, 32, nil)
+				resize(widget, (showTime and 48 or stackSmall and 32 or 40), nil)
+				move(dotText, (stackSmall and 32 or 40), nil)
+				move(dot, (stackSmall and 16 or 24), nil)
+			end
+		else
+			hide(dotStackText)
+			if not showBig then
+				move(dotText, 16, nil)
+				move(dot, 0, nil)
+			end
+		end
+	else
+		hide(dot)
+		hide(dotText)
+		hide(dotStackText)
+	end
+end
+
+--------------------------------------------------------------------------------
+-- Button reactions
+--------------------------------------------------------------------------------
+
+local reactions={}
+
+function addReaction(name, func)
+	if not reactions then reactions={} end
+	reactions[name]=func
+end
+
+function runReaction(widget)
+	local name=getName(widget)
+	if not name or not reactions or not reactions[name] then return false end
+	reactions[name]()
+	return true
+end
+
+--------------------------------------------------------------------------------
+-- Raid move
+--------------------------------------------------------------------------------
+
+local moveMode=false
+local movePid=nil
+local activeBars=0
+local activeGroup=0
+local updateFunc=nil
+
+function moveTo(pid)
+	if pid and movePid and isRaid() and raid.IsLeader() then
+		if pid<4 then
+			local groupSize=getGroupSizeFromPersId(movePid)
+			local group=getGroupFromPersId(movePid)
+			if group and pid<group or groupSize and groupSize>1 then
+				local emptyParty=getFirstEmptyPartyInRaid()
+				if pid<emptyParty  then
+					raid.MoveMemberToGroup(movePid, pid)
+				else
+					raid.IsolateMember(movePid)
+				end
+			end
+		else
+			local persId=getPersIdToId(pid)
+			if movePid and persId then raid.SwapMembers(movePid, persId) end
+		end
+	end
+	moveMode=false
+	movePid=nil
+	if updateFunc then updateFunc() end
+end
+
+function startMove(pid)
+	if not isRaid() or not raid.IsLeader() then moveMode=false return end
+	movePid=getPersIdToId(pid)
+	if movePid then moveMode=true end
+	if updateFunc then updateFunc() end
+end
+
+--------------------------------------------------------------------------------
+-- Menu
+--------------------------------------------------------------------------------
+
+--group.CanInvite()  Добавление в группу
+
+local showMenu
+
+local menu=nil
+local menuWidth=300
+local mouseX=300
+local mouseY=300
+local whisperMode=false
+
+function closeMenu()
+	if menu then
+		destroy(menu)
+		menu=nil
+	end
+end
+
+local generatedMenu={}
+
+function addToMenu(name, func)
+	table.insert(generatedMenu, name)
+	addReaction(name, func)
+end
+
+function generateMenu(pid)
+	local persId=getPersIdToId(pid)
+	--message(type(persId))
+	
+	pid=getIdToPersId(pid)
+	
+	generatedMenu={}
+	local name=getNameToPersId(persId) or pid and object.GetName(pid) or "" --isExist(pid) and
+	local canWhisper=isExist(pid) and isNumber(pid) and unit.IsPlayer(pid) and isFriend(pid) and avatar.GetId()~=pid
+	local canInvite=canWhisper and not raid.IsAutomatic() and not group.IsAutomatic()
+	local isAvatar=avatar.GetId()==pid
+	local isLeader=isRaid() and raid.IsLeader() or isGroup() and group.IsLeader()
+
+	if isAvatar and (isRaid() or isGroup()) then
+		local lootScheme=loot.GetLootScheme()
+		if lootScheme then
+			if lootScheme==LOOT_SCHEME_TYPE_FREE_FOR_ALL 	then addToMenu("freeLootMenuButton", function () if isLeader then loot.SetLootScheme(LOOT_SCHEME_TYPE_MASTER) closeMenu() end end) end
+			if lootScheme==LOOT_SCHEME_TYPE_MASTER 			then addToMenu("masterLootMenuButton", function () if isLeader then loot.SetLootScheme(LOOT_SCHEME_TYPE_GROUP) closeMenu() end end) end
+			if lootScheme==LOOT_SCHEME_TYPE_GROUP 			then addToMenu("groupLootMenuButton", function () if isLeader then loot.SetLootScheme(LOOT_SCHEME_TYPE_FREE_FOR_ALL) closeMenu() end end) end
+		end
+		local quality=loot.GetMinItemQualityForLootScheme()
+		if quality then
+			if quality==ITEM_QUALITY_JUNK			 	then addToMenu("junkLootMenuButton", function () if isLeader then loot.SetMinItemQualityForLootScheme(ITEM_QUALITY_GOODS) closeMenu() end end) end
+			if quality==ITEM_QUALITY_GOODS	 			then addToMenu("goodsLootMenuButton", function () if isLeader then loot.SetMinItemQualityForLootScheme(ITEM_QUALITY_COMMON) closeMenu() end end) end
+			if quality==ITEM_QUALITY_COMMON	 			then addToMenu("commonLootMenuButton", function () if isLeader then loot.SetMinItemQualityForLootScheme(ITEM_QUALITY_UNCOMMON) closeMenu() end end) end
+			if quality==ITEM_QUALITY_UNCOMMON			then addToMenu("uncommonLootMenuButton", function () if isLeader then loot.SetMinItemQualityForLootScheme(ITEM_QUALITY_RARE) closeMenu() end end) end
+			if quality==ITEM_QUALITY_RARE	 			then addToMenu("rareLootMenuButton", function () if isLeader then loot.SetMinItemQualityForLootScheme(ITEM_QUALITY_EPIC) closeMenu() end end) end
+			if quality==ITEM_QUALITY_EPIC	 			then addToMenu("epicLootMenuButton", function () if isLeader then loot.SetMinItemQualityForLootScheme(ITEM_QUALITY_LEGENDARY) closeMenu() end end) end
+			if quality==ITEM_QUALITY_LEGENDARY	 		then addToMenu("legendaryLootMenuButton", function () if isLeader then loot.SetMinItemQualityForLootScheme(ITEM_QUALITY_RELIC) closeMenu() end end) end
+			if quality==ITEM_QUALITY_RELIC	 			then addToMenu("relicLootMenuButton", function () if isLeader then loot.SetMinItemQualityForLootScheme(ITEM_QUALITY_JUNK) closeMenu() end end) end
+		end
+	end
+
+	if not isAvatar then
+		addToMenu("inspectButton", function () if type(pid)~="userdata" then avatar.StartInspect(pid) end closeMenu() end)
+	end
+
+	if canWhisper then
+		addToMenu("whisperMenuButton", function ()
+			local chat=stateMainForm:GetChildUnchecked("ChatInput", false)
+			chat=getChild(chat, "ChatInput")
+			whisperMode=true
+			show(chat)
+			getChild(chat, "Input", true):SetFocus(true)
+			mission.SetChatInputText((toWString("/whisper "..toString(name).." ")), 0)
+			closeMenu() end)
+	end
+
+	if isRaid() then
+		local rights=raid.GetMemberRights and (raid.IsPlayerInAvatarsRaidById and raid.GetMemberRights(persId) or raid.GetMemberRights(name))
+		local isHelper=rights and (rights[0] and rights[0]==RAID_MEMBER_RIGHT_LEADER_HELPER or rights[1] and rights[1]==RAID_MEMBER_RIGHT_LEADER_HELPER)
+		if raid.IsPlayerInAvatarsRaidById and raid.IsPlayerInAvatarsRaidById(persId) or raid.IsPlayerInAvatarsRaid(toWString(name)) then
+			local isMaster=rights and (rights[0] and rights[0]==RAID_MEMBER_RIGHT_LOOT_MASTER or rights[1] and rights[1]==RAID_MEMBER_RIGHT_LOOT_MASTER)
+			if avatar.GetId()==pid 		then addToMenu("raidLeaveMenuButton", function () raid.Leave() closeMenu() end) end
+			if raid.IsLeader() 			then
+				if avatar.GetId()~=pid 	then
+					addToMenu("leaderMenuButton", function () raid.ChangeLeader(persId) closeMenu() end)
+					if not isHelper then addToMenu("addLeaderHelperMenuButton", function () raid.AddRight(persId, RAID_MEMBER_RIGHT_LEADER_HELPER) closeMenu() end)
+					else 				 addToMenu("deleteLeaderHelperMenuButton", function () raid.RemoveRight(persId, RAID_MEMBER_RIGHT_LEADER_HELPER) closeMenu() end) end
+					if not isMaster then addToMenu("addMasterLootMenuButton", function () raid.AddRight(persId, RAID_MEMBER_RIGHT_LOOT_MASTER) closeMenu() end)
+					else 				 addToMenu("deleteMasterLootMenuButton", function () raid.RemoveRight(persId, RAID_MEMBER_RIGHT_LOOT_MASTER) closeMenu() end) end
+				end
+				if not raid.IsAutomatic() then
+					if avatar.GetId()~=pid 	then addToMenu("kickMenuButton", function () raid.Kick(persId) closeMenu() end) end
+					addToMenu("disbandMenuButton", function () raid.Disband() closeMenu() end)
+				end
+				addToMenu("moveMenuButton", function () startMove(persId) closeMenu() end)
+			end
+		else
+			if canInvite and (isHelper or raid.IsLeader()) then addToMenu("inviteMenuButton", function () raid.Invite(pid) closeMenu() end) end
+		end
+	elseif isGroup() then
+		local memberInfo=group.GetMemberInfoById and type(persId)=="userdata" and group.GetMemberInfoById(persId) or group.GetMemberInfoByPersistentId and group.GetMemberInfoByPersistentId(persId)
+		if memberInfo then name=memberInfo.name end
+		if memberInfo or isNumber(pid) and group.IsCreatureInGroup(pid) then
+			if avatar.GetId()==pid 		then
+				addToMenu("leaveMenuButton", function () group.Leave() closeMenu() end)
+				if group.IsLeader() and not group.IsAutomatic() then
+					addToMenu("createRaidMenuButton", function () raid.Create() closeMenu() end)
+					addToMenu("createSmallRaidMenuButton", function () raid.CreateSmall() closeMenu() end)
+				end
+			else
+				if group.CanKickMember() 	then addToMenu("kickMenuButton", function () group.KickMember(name) closeMenu() end) end
+				if group.IsLeader() 		then addToMenu("leaderMenuButton", function () group.SetLeader(name) closeMenu() end) end
+			end
+		else
+			if canInvite and group.CanInvite()	then addToMenu("inviteMenuButton", function () group.Invite(pid) closeMenu() end) end
+		end
+	else
+		if canInvite 					then addToMenu("inviteMenuButton", function () group.Invite(pid) closeMenu() end) end
+	end
+
+	addToMenu("closeMenuButton", function () closeMenu() end)
+end
+
+function showMenu(pid)
+	closeMenu()
+	generateMenu(pid)
+	if not generatedMenu then return end
+	setTemplateWidget(template)
+	local menuHeight=(table.maxn(generatedMenu)+1)*20+8
+
+	menu=createWidget(mainForm, "Menu", "Panel", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, menuWidth, menuHeight, mouseX, mouseY)
+	priority(menu, 5600)
+
+	local rpid=getIdToPersId(pid)
+	local name=getNameToPersId(getPersIdToId(pid)) or isExist(rpid) and object.GetName(rpid) or ""
+	setText(createWidget(menu, "Name", "TextView",  WIDGET_ALIGN_CENTER, WIDGET_ALIGN_LOW, menuWidth-8, 20, nil, 4), name, "LogColorYellow", "center")
+	for i,j in ipairs(generatedMenu) do
+		setLocaleText(createWidget(menu, j, "Button",  WIDGET_ALIGN_CENTER, WIDGET_ALIGN_LOW, menuWidth-8, 20, nil, 4+(i)*20))
+	end
+end
+
+showMenuFunc=showMenu
+
+--------------------------------------------------------------------------------
+-- Auras
+--------------------------------------------------------------------------------
+
+local aurasPanelHeight=20
+--local aurasPanelWidth=panelWidth-6
+local aurasShow=false
+
+local function hideAuras(index)
+	if not index then aurasShow=false end
+	for i=0, 3 do
+		if not index or index==i then
+			hide(getChild(panelForm, "Auras"..toString(i)))
+		end
+	end
+end
+
+local function showAuras(i)
+	if not aurasNames or not players or not aurasShow and i then hideAuras() return end
+	if not i then aurasShow=true return end
+	local num=players[i] and table.maxn(players[i])
+	if not num or num<1 then hideAuras(i) return end
+
+	local aurasWidget=getChild(panelForm, "Auras"..toString(i))
+	show(aurasWidget)
+	if gorisontalMode then
+		local numActiveGroup=0
+		for r=0, numGroup-1 do
+			local num=players[r] and table.maxn(players[r])
+			if num and num>0 then numActiveGroup=numActiveGroup+1 end
+		end
+		move(aurasWidget, nil, panelHeight*numActiveGroup+topPanelHeight-1)
+		if twoxtwoMode then move(aurasWidget, nil, panelHeight*(numActiveGroup>1 and (numActiveGroup-2) or numActiveGroup)+topPanelHeight-1) end
+	else
+		move(aurasWidget, nil, panelHeight*num+topPanelHeight-1)
+		if twoxtwoMode then move(aurasWidget, nil, panelHeight*12+topPanelHeight-1) end
+	end
+
+	local buffInfos={}
+	local stacks={}
+	for j, l in pairs(players[i]) do
+		if l and l.buffs then
+			for k, names in ipairs(aurasNames) do
+				if not stacks[k] then stacks[k]=0 end
+				for m, name in pairs(names) do
+					local buffInfo=getBuffInfoFromUnitInfo(l, name)
+					if buffInfo then
+						stacks[k]=stacks[k]+1
+						buffInfos[k]=buffInfo
+					end
+				end
+			end
+		end
+	end
+
+	for k, names in ipairs(aurasNames) do
+		if buffInfos[k] then buffInfos[k].stackCount=stacks[k] end
+		showBuff(getChild(aurasWidget, "Auras"..toString(k)), buffInfos[k], true, nil, nil, shortMode)
+	end
+end
+
+local function initAuras()
+	if not aurasNames then return end
+	for i=0, 3 do
+		destroy(getChild(panelForm, "Auras"..toString(i)))
+		local aurasPanelWidth=panelWidth-6
+		setTemplateWidget(template)
+		local auras=createWidget(panelForm, "Auras"..toString(i), "Panel", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, aurasPanelWidth, aurasPanelHeight+2, i*panelWidth+2, 0)
+		setBackgroundColor(auras, {r=0, g=1, b=0, a=0.5})
+		setTemplateWidget(wtPlayerBars[0][1])
+		for k, names in ipairs(aurasNames) do
+			local auraWidth=shortMode and 16 or 32
+			local x=shortMode and 6 or 22
+			createWidget(auras, "Auras"..toString(k), "Buff1", nil, nil, 16, 16, x+(k-1)*auraWidth, 4)
+		end
+	end
+	hideAuras()
+end
+
+--------------------------------------------------------------------------------
+-- Initialisations
+--------------------------------------------------------------------------------
+
+function initStandartInterface()
+	if showStandartRaid then
+		if isRaid() then
+			show(getChild(stateMainForm, "Raid"))
+			show(getChild(getChild(stateMainForm, "Raid"), "Raid"))
+		end
+	else
+		hide(getChild(stateMainForm, "Raid"))
+		hide(getChild(getChild(stateMainForm, "Raid"), "Raid"))
+	end
+	if showStandartParty then
+		show(getChild(getChild(stateMainForm, "Plates"), "Party"))
+		show(getChild(getChild(stateMainForm, "Buffs"), "Party"))
+	else
+		hide(getChild(getChild(stateMainForm, "Plates"), "Party"))
+		hide(getChild(getChild(stateMainForm, "Buffs"), "Party"))
+	end
+end
+
+local function initRaidFilter()
+	if not wtPartyButtons or not raid_filter then return end
+	for i, j in ipairs(raid_filter) do
+		if raid_filter[i] then
+			setBackgroundColor(wtPartyButtons[i], { r = 1; g = 1, b = 1; a = 1 })
+		else
+			setBackgroundColor(wtPartyButtons[i], { r = 0.3; g = 0.3; b = 0.3; a = 1 })
+		end
+	end
+end
+
+local addBars={}
+local addBarColor={r=0.8, g=1, b=0.5, a=0.8}
+
+function initAddBar(i, j)
+	setTemplateWidget(panelForm)
+	local addBar=createWidget(panelForm, nil, "AddBar", nil, nil, panelWidth, panelHeight, i*panelWidth, (j-1)*panelHeight+topPanelHeight)
+	resize(getChild(addBar, "HealthBarBackground"), panelWidth, panelHeight)
+	setBackgroundTexture(addBar, nil)
+	setBackgroundColor(addBar, addBarColor)
+	addBars[i]=addBar
+end
+
+function removeAllAddBars()
+	for i, j in pairs(addBars) do
+		destroy(j)
+	end
+	addBars={}
+end
+
+function getAddBarId(widget)
+	for i=0, 3 do
+		if equals(widget, addBars[i]) then return i end
+	end
+	return nil
+end
+
+local function initBars()
+	if wtPlayerBars then
+		for i, group in pairs(wtPlayerBars) do
+			for j, widget in pairs(group) do
+				destroy(widget)
+			end
+		end
+	end
+	wtPlayerBars = {}
+	for i=0, numGroup-1 do
+		wtPlayerBars[i]={}
+		for j=1, numBars do
+			setTemplateWidget(panelForm)
+			local mod1=gorisontalMode and (j-1) or i
+			local mod2=gorisontalMode and i or (j-1)
+			if twoxtwoMode then
+				if gorisontalMode then
+					mod1=i>1 and i<4 and (mod1+6) or mod1
+					mod2=i>1 and (mod2-2) or mod2				
+				else
+					mod1=i>1 and (mod1-2) or mod1
+					mod2=i>1 and i<4 and (mod2+6) or mod2
+				end
+			end
+			wtPlayerBars[i][j]=createWidget(panelForm, nil, "PlayerBar", nil, nil, panelWidth, panelHeight, mod1*panelWidth, mod2*panelHeight+topPanelHeight)
+			resize(getChild(wtPlayerBars[i][j], "HealthBarBackground"), panelWidth, panelHeight)
+			resize(getChild(wtPlayerBars[i][j], "HealthBar"), nil, panelHeight-4)
+			hide(wtPlayerBars[i][j])
+		end
+	end
+end
+
+function initAvatarBuffs()
+	hide(getChild(buffForm, "BuffGroup"))
+
+	for i, b in ipairs(avatarBuffs) do
+		if b.group then
+			if b.group.IsValid and b.group:IsValid() then DnD.Remove(b.group) end
+			destroy(b.group)
+		end
+	end
+	
+	for i, group in ipairs(avatarBuffsGroups) do
+		if group then
+			avatarBuffs[i]={}
+			local h=round(group.h)
+			local w=round(group.w)
+			local size=round(group.size)
+			if h and w and size and group.buffs then
+				local num=math.min(w*h, table.getn(group.buffs))
+				setTemplateWidget(buffForm)
+				avatarBuffs[i].group=createWidget(buffForm, "BuffGroup"..toString(i), "BuffGroup")
+				resize(avatarBuffs[i].group, math.max(size*math.min(w, num), avatarBuffsTopWidth), size*math.min(h, math.ceil(num/w))+topPanelHeight)
+				if group.fix then
+					hide(getChild(avatarBuffs[i].group, "BuffPanel", true))
+				else
+					show(getChild(avatarBuffs[i].group, "BuffPanel", true))
+				end
+				setFade(getChild(avatarBuffs[i].group, "BuffPanel", true), 0.3)
+				DnD:Init(avatarBuffs[i].group, getChild(avatarBuffs[i].group, "BuffPanel"), true)
+				setTemplateWidget(getChild(buffForm, "BuffGroup"))
+				for j=1, num do
+					local x=((j-1)%w)*size
+					local y=math.floor((j-1)/w)*size
+					avatarBuffs[i][j]=createWidget(avatarBuffs[i].group, nil, "Buff", nil, nil, nil, nil, x, topPanelHeight+y)
+					resize(avatarBuffs[i][j], size, size)
+					resize(getChild(avatarBuffs[i][j], "DotText"), size, round(size/2.4))
+					resize(getChild(avatarBuffs[i][j], "DotStackText"), size, round(size/2.4))
+					move(getChild(avatarBuffs[i][j], "DotStackText"), round(size/10), round(size/10))
+				end
+			end
+		end
+	end
+	setTimeout("avatarBuffsTimer", avatarBuffsUpdateTime)
+end
+
+--------------------------------------------------------------------------------
+-- Shops and food
+--------------------------------------------------------------------------------
+
+local function findBuff(targetId, name)
+	if not name then return nil end
+	local buffs=isExist(targetId) and object.GetBuffs(targetId)
+	if not buffs then return false end
+	for i, buff in pairs(buffs) do
+		local buffInfo = buff and object.GetBuffInfo( buff )
+		if buffInfo and find(buffInfo.name, name) then return buffInfo end
+	end
+	return false
+end
+
+local function findShop(targetId, names)
+	local buffInfo=nil
+	for i, name in pairs(names) do
+		buffInfo=findBuff(targetId, name) or buffInfo
+	end
+	return buffInfo
+end
+
+local function analyseShop(targetId)
+	local shopA=findShop(targetId, shopANames)
+	local shopD=findShop(targetId, shopDNames)
+	local smallShopA=findShop(targetId, smallShopANames)
+	local smallShopD=findShop(targetId, smallShopDNames)
+	local foodW=findShop(targetId, foodWNames)
+	local foodS=findShop(targetId, foodSNames)
+	local el=findShop(targetId, elNames)
+
+	if shopA or shopD or smallShopA or smallShopD or foodW or foodS or el then
+		message(toString(object.GetName(targetId))..": "..(shopA and "A" or "")..(shopD and "D" or "")..(smallShopA and "a" or "")..(smallShopD and "d" or "")..(foodW and "W" or "")..(foodS and "S" or "")..(el and "E" or ""))
+		return true
+	end
+	return false
+end
+
+local function testShop()
+	if not locale["messageShop"] then return end
+	message(locale["messageShop"])
+	local shops=false
+	if isRaid() then
+		local members = raid.GetMembers()
+		for ig, group in pairs(members) do
+			for pi, player in pairs(group) do
+				if players[ig] and players[ig][pi+1] then
+					shops=analyseShop(players[ig][pi+1].id) or shops
+				end
+			end
+		end
+	elseif isGroup() then
+		local members = group.GetMembers()
+		for pi, player in pairs(members) do
+			if players[0] and players[0][pi+1] then
+				shops=analyseShop(players[0][pi+1].id) or shops
+			end
+		end
+	else
+		shops=analyseShop(players[0][1].id) or shops
+	end
+	if not shops then message(locale["messageNoShop"]) end
+end
+
+--------------------------------------------------------------------------------
+-- Actions
+--------------------------------------------------------------------------------
+
+function action(name, targetInfo)
+	if moveMode then
+		moveTo(targetInfo.persId or targetInfo.id)
+		return true
+	elseif compare(name, "move") then
+		startMove(targetInfo.persId or targetInfo.id)
+		return true
+	end
+
+	local targetId=targetInfo.id
+	if compare(name, "target") and isExist(targetId) then
+		selectTarget(unit.GetTarget(targetId))
+	elseif selectBeforeCast or compare(name, "select") then
+		selectTarget(targetId)
+	end
+	if compare(name, "menu") then
+		showMenu(targetInfo.persId or targetId)
+		return true
+	end
+
+	if targetInfo.dead and not targetInfo.enemy then
+		return ressurect(targetId, ressurectName)
+	end
+
+	--if not isExist(targetId) then return nil end
+	return cast(name, targetId) or useItem(name, targetId)
+end
+
+function use(name, targetInfo, clickType)
+	local targetId=targetInfo.id
+	if not name or not clickType then return nil end
+
+	if clickType=="mouseLeft" then
+		name=name.l
+	elseif clickType=="mouseRight" then
+		name=name.r
+	elseif clickType=="mouseUp" then
+		name=name.u
+	elseif clickType=="mouseDown" then
+		name=name.d
+	elseif clickType=="mouseMove" then
+		name=name.m
+	end
+
+	if not name then return nil end
+
+	local noneed=false
+	for i, token in findWord(name) do
+		noneed=noneed or action(token or i, targetInfo)
+	end
+	if noneed or isEnemy(targetId) then return nil end
+	local test=true
+	local first=true
+	for i, token in findWord(testSpellName) do
+		if first then test=testSpell(token or i, targetId) end
+		if not test and not first then action(token or i, targetInfo) end
+		first=false
+	end
+end
+
+--------------------------------------------------------------------------------
+-- Config.Debuffs
+--------------------------------------------------------------------------------
+
+function getIndexForWidget(widget)
+	local parent=getParent(widget)
+	local container=getParent(getParent(getParent(parent)))
+	if not parent or not container then return end
+	local index=nil
+	for i=0, container:GetElementCount() do
+		if equals(widget, getChild(container:At(i), getName(widget), true)) then index=i end
+	end
+	return index
+end
+
+function deleteContainer(t, widget)
+	local parent=getParent(widget)
+	local container=getParent(getParent(getParent(parent)))
+	local index=getIndexForWidget(widget)
+	if container and index and t then
+		container:RemoveAt(index)
+		table.remove(t, index+1)
+	end
+end
+
+function generateWidgetForTable(t, container, index)
+	setTemplateWidget(template)
+	local panel=createWidget(container, nil, "Panel", WIDGET_ALIGN_BOTH, WIDGET_ALIGN_LOW, nil, 30, nil, nil, true) --FIX
+	setBackgroundColor(panel, {r=1, g=1, b=1, a=0.5})
+	setText(createWidget(panel, "Id", "TextView", WIDGET_ALIGN_LOW, WIDGET_ALIGN_CENTER, 30, 20, 10), index)
+
+	if t.name then
+		local nameWidget=createWidget(panel, "Name"..toString(index), "EditLine", WIDGET_ALIGN_LOW, WIDGET_ALIGN_CENTER, 200, 20, 35)
+		setText(nameWidget, t.name)
+		setBackgroundTexture(nameWidget, nil)
+		setBackgroundColor(nameWidget, nil)
+	end
+
+
+	if find(getName(getParent(container)), "GroupBuffs") then
+		if t.cd==nil then t.cd=avatarCDDefault end
+		if t.buff==nil then t.buff=avatarBuffDefault end
+		if t.time==nil then t.time=avatarTimeDefault end
+
+		setCheckBox(createWidget(panel, "cdCheckBox", "CheckBox", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_CENTER, 25, 25, 80), t.cd)
+		setCheckBox(createWidget(panel, "buffCheckBox", "CheckBox", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_CENTER, 25, 25, 50), t.buff)
+		local cdWidget=createWidget(panel, "CD"..toString(index), "EditLine", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_CENTER, 80, 20, 110)
+		setText(cdWidget, t.time)
+		setBackgroundTexture(cdWidget, nil)
+		setBackgroundColor(cdWidget, nil)
+	end
+
+	if find(getName(getParent(container)), "profiles") then
+		if not compare(t.sysName or t.name, activeBuildName or avatar.GetActiveBuild()) then 
+			setText(createWidget(panel, "loadProfileButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_CENTER, 50, 15, 30), "Load") 
+		else
+			setText(createWidget(panel, "saveProfileButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_CENTER, 50, 15, 85), "Save") 
+		end
+	end
+
+
+	--setText(createWidget(panel, "DownButton"..getName(getParent(container)), "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_CENTER, 15, 15, 50), "v")
+	--setText(createWidget(panel, "UpButton"..getName(getParent(container)), "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_CENTER, 15, 15, 30), "^")
+	local name=getName(getParent(container))
+	if name then
+		if compare(name, "ConfigBuffsForm") then
+			setText(createWidget(panel, "EditButton"..name, "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_CENTER, 15, 15, 30), "e")
+		end
+		setText(createWidget(panel, "DeleteButton"..name, "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_CENTER, 15, 15, 10), "x")
+	end
+	return panel
+end
+
+function showTable(t, widget)
+	local container=getChild(widget, "container")
+	if not t or not container then return nil end
+	if container.RemoveItems then container:RemoveItems() end
+	for i, element in ipairs(t) do
+		if container.PushBack then
+			local widget=generateWidgetForTable(element, container, i)
+			--setText(getChild(widget, "Id"), i)
+			if widget then container:PushBack(widget) end
+		end
+		--if container.PushBackValuedText then
+		--	local valuedText = common.CreateValuedText()
+		--	valuedText:SetFormat( toWString("<header alignx = 'center'>"..toString(element.name).."</header>") )
+		--	container:PushBackValuedText(valuedText)
+		--end
+	end
+end
+
+local function updateTable(t, form)
+	showTable(t, form)
+	detectedObjects={}
+	updateDetectedObjects(avatar.GetUnitList())
+end
+
+function addToTable(t, form, textedit)
+	if not textedit then textedit="EditLine1" end
+	local text=getText(getChild(form, textedit))
+	if not t or not text or compare(text, "") then return nil end
+	table.insert(t, { name=text } )
+	updateTable(t, form)
+end
+
+function deleteToTable(t, name)
+	if not t or not name or compare(name, "") then return nil end
+	for i, element in pairs(t) do
+		if compare(element.name, name) then
+			table.remove(t, i)
+			deleteToTable(t, name)
+		end
+	end
+end
+
+local function testBuff(targetId, name, onlyIfOwner)
+	if not name then return nil end
+	if type(name)=="table" then
+		local buffInfo=nil
+		for i,j in pairs(name) do
+			buffInfo=buffInfo or testBuff(targetId, j, onlyIfOwner)
+		end
+		return buffInfo
+	end
+	local buffs=isExist(targetId) and object.GetBuffs(targetId)
+	if not buffs then return false end
+	for i, buff in pairs(buffs) do
+		local buffInfo = buff and object.GetBuffInfo( buff )
+		if buffInfo and find(buffInfo.name, name) then
+			if not onlyIfOwner or buffInfo.producer and buffInfo.producer.casterId==targetId then
+				return buffInfo
+			end
+		end  ----compare(buffInfo.name, name)
+	end
+	return false
+end
+
+local function testBuffO(unitInfo, name, onlyIfOwner)
+	local buffInfo = getBuffInfoFromUnitInfo(unitInfo, name)
+	return buffInfo and (not onlyIfOwner or buffInfo.producer and buffInfo.producer.casterId==unitInfo.id) and buffInfo or false
+end
+
+local function testDebuffFromName(t, name)
+	if not name then return false end
+	for i, debuff in pairs( t ) do
+		if compare(name, debuff.name) then
+			return true
+		end
+	end
+	return false
+end
+
+local function testBuffs(targetId)
+	local buffs=isExist(targetId) and object.GetBuffs(targetId)
+	if not buffs then return nil end
+	for i, buff in pairs(buffs) do
+		local buffInfo = buff and object.GetBuffInfo( buff )
+		if buffInfo and not buffInfo.isPositive  then
+			local enemy=isEnemy(targetId)
+			if enemy and testDebuffFromName(controls, buffInfo.name) then
+				return buffInfo
+			elseif not enemy then
+				if autoDebuffMode then
+					for i, g in pairs(buffInfo.groups) do
+						if 	compare(g, "magics") or
+							compare(g, "diseases") or
+							compare(g, "poisons") then
+								return buffInfo
+						end
+					end
+				end
+				if testDebuffFromName(debuffs, buffInfo.name) then
+					return buffInfo
+				end
+			end
+		end
+	end
+	return nil
+end
+
+local function isWanted(objectId)
+	if not isExist(objectId) then return false end
+	local enemy=isEnemy(objectId)
+	if enemy and testBuffs(objectId) then return true end
+	for i, mobInfo in pairs(mobs) do
+		--if not enemy and mobInfo
+		if mobInfo
+			and (	find(object.GetName(objectId), mobInfo.name) or
+					compare(mobInfo.name, "all") or
+					compare(mobInfo.name, "mobs") and not unit.IsPlayer(objectId) or
+					compare(mobInfo.name, "players") and unit.IsPlayer(objectId) or
+					compare(mobInfo.name, "enemies") and isEnemy(objectId) or
+					compare(mobInfo.name, "friends") and isFriend(objectId) or
+					compare(mobInfo.name, "enemy players") and unit.IsPlayer(objectId) and isEnemy(objectId) or
+					compare(mobInfo.name, "enemy mobs") and not unit.IsPlayer(objectId) and isEnemy(objectId) or
+					compare(mobInfo.name, "friendly players") and unit.IsPlayer(objectId) and isFriend(objectId) or
+					compare(mobInfo.name, "friendly mobs") and not unit.IsPlayer(objectId) and isFriend(objectId) or
+					compare(mobInfo.name, "not friendly players") and unit.IsPlayer(objectId) and not isFriend(objectId)
+				)
+			and not object.IsDead(objectId) then
+			return true
+		end
+	end
+	return false
+end
+
+function updateDetectedObjects(t)
+	for i, uid in pairs(t) do
+		if isExist(uid) and isWanted(uid) then
+			table.insert(detectedObjects, uid)
+		end
+	end
+end
+
+--------------------------------------------------------------------------------
+-- Load/save
+--------------------------------------------------------------------------------
+
+local configButton = {}
+
+function getCurrentMod(shift, ctrl, alt, enemy)
+	local currentMod=(ctrl and "c" or "nc")
+	currentMod=currentMod..(shift and "s" or "ns")
+	currentMod=currentMod..(alt and "a" or "na")
+	return currentMod..(enemy and "e" or "f")
+end
+
+function getCurrentBinds()
+	return binds[getCurrentMod(configButton["shiftButton"], configButton["ctrlButton"], configButton["altButton"], configButton["enemyButton"])]
+end
+
+function showCurrentBinds()
+	local currentBinds=getCurrentBinds()
+	if currentBinds then
+		setText(getChild(configForm, "EditLine1"), currentBinds.l)
+		setText(getChild(configForm, "EditLine2"), currentBinds.r)
+		setText(getChild(configForm, "EditLine3"), currentBinds.u)
+		setText(getChild(configForm, "EditLine4"), currentBinds.d)
+		setText(getChild(configForm, "EditLine7"), currentBinds.m)
+	end
+	setText(getChild(configForm, "EditLine5"), ressurectName)
+	setText(getChild(configForm, "EditLine6"), testSpellName)
+end
+
+local function OnConfigChange(params)
+	if not params or compare(getName(params.widget), "ConfigButton") then
+		local configActive=configForm and configForm:IsVisible()
+		if configActive then
+			hide(configForm)
+		else
+			show(configForm)
+			showCurrentBinds()
+		end
+	end
+end
+
+local function OnShopChange(params)
+	if not params or compare(getName(params.widget), "ShopButton") then
+		if shopMode then shopMode=false
+		else 			 shopMode=true end
+	end
+end
+
+local function OnTestShop(params)
+	if not params or compare(getName(params.widget), "ShopButton") then
+		testShop()
+	end
+end
+
+local function OnCheckChange(params)
+	if not params or compare(getName(params.widget), "CheckButton") then
+		if 		raid.StartReadyCheck 	then 	raid.StartReadyCheck()
+		elseif 	group.StartReadyCheck 	then 	group.StartReadyCheck() end
+	end
+end
+
+local function getAvatarBuffsIndex(widget)
+	for i, j in ipairs(avatarBuffs) do
+		if equals(j and j.group, widget) then return i end
+	end
+	return nil
+end
+
+local function OnAssertChange(params)
+	if not params or compare(getName(params.widget), "AssertButton") then
+		local index=getAvatarBuffsIndex(getParent(params.widget, 2))
+		if not index or not avatarBuffsGroups[index] then return nil end
+		avatarBuffsGroups[index].fix=true
+		hide(getChild(avatarBuffs[index] and avatarBuffs[index].group, "BuffPanel", true))
+		setCheckBox(getChild(configGroupBuffsForm, "buffsFixButton"), true)
+		configButton["buffsFixButton"]=true
+		save("avatarBuffsGroups", avatarBuffsGroups)
+	end
+end
+
+local activeGroupBuffs=nil
+
+local function setActiveGroupBuffs(num)
+	local info=num and avatarBuffsGroups and avatarBuffsGroups[num]
+	if not info then return end
+	activeGroupBuffs=num
+	setText(getChild(configGroupBuffsForm, "EditLine1"), info.w or avatarBuffsWidthDefault)
+	setText(getChild(configGroupBuffsForm, "EditLine2"), info.h or avatarBuffsHeightDefault)
+	setText(getChild(configGroupBuffsForm, "EditLine3"), info.size or avatarBuffsSizeDefault)
+	setText(getChild(configGroupBuffsForm, "EditLine4"), info.target or avatarBuffsTargetDefault)
+	setCheckBox(getChild(configGroupBuffsForm, "buffsFixButton"), info.fix or avatarBuffsFixDefault)
+	configButton["buffsFixButton"]=info.fix or avatarBuffsFixDefault
+	if not avatarBuffsGroups[num].buffs then avatarBuffsGroups[num].buffs={} end
+	showTable(avatarBuffsGroups[num].buffs, configGroupBuffsForm)
+end
+
+local function saveGroupBuffs()
+	if not activeGroupBuffs or not avatarBuffsGroups then return end
+	local num=activeGroupBuffs
+	avatarBuffsGroups[num].w=tonumber(getText(getChild(configGroupBuffsForm, "EditLine1")))
+	avatarBuffsGroups[num].h=tonumber(getText(getChild(configGroupBuffsForm, "EditLine2")))
+	avatarBuffsGroups[num].size=tonumber(getText(getChild(configGroupBuffsForm, "EditLine3")))
+	avatarBuffsGroups[num].target=toString(getText(getChild(configGroupBuffsForm, "EditLine4")))
+	avatarBuffsGroups[num].fix=configButton["buffsFixButton"]
+	if avatarBuffsGroups[num].buffs then
+		local container=getChild(configGroupBuffsForm, "container")
+		if container then
+			for i, j in ipairs(avatarBuffsGroups[num].buffs) do
+				j.time=tonumber(getText(getChild(container, "CD"..toString(i), true)))
+				j.name=getText(getChild(container, "Name"..toString(i), true))
+			end
+		end
+	end
+	save("avatarBuffsGroups", avatarBuffsGroups)
+	if locale["groupSavedMessage"] then message(locale["groupSavedMessage"]) end
+	initAvatarBuffs()
+end
+
+function saveContainer(t, form)
+	local container=getChild(form, "container")
+	if not container or not t then return nil end
+	for i, j in ipairs(t) do
+		j.name=getText(getChild(container, "Name"..toString(i), true))
+	end
+end
+
+function getBuildName(name)
+	if name then
+		for i, j in ipairs(profiles) do
+			if compare(j.sysName, name) then 
+				return j.name
+			end
+		end
+		return name
+	end
+	return avatar.GetActiveBuild()==0 and locale["build1Name"] or locale["build2Name"] or ""
+end
+
+function loadProfile(name)
+	if not name then 
+		local defaultName=toString(avatar.GetActiveBuild())
+		setProfileName()
+		name=getBool("profileName", defaultName)
+		--message(name.." загружен как базовый для профиля "..defaultName)
+	else
+		--save("profileName", name)
+		--save("profiles", profiles)
+	end
+	--message("bla"..name)
+	setProfileName(name)
+	activeBuildName=name
+
+	if not loadProfiles then 
+		profiles=getTable("profiles") or profiles 
+		loadProfiles=true
+	end
+	binds=getTable("binds") or binds
+	debuffs=getTable("debuffs") or debuffs
+	mobs=getTable("mobs") or mobs
+	controls=getTable("controls") or controls
+	avatarBuffsGroups=getTable("avatarBuffsGroups") or avatarBuffsGroups
+	raid_filter=getTable("raid_filter") or raid_filter
+	priorityMode=getBool("priorityMode", priorityMode)
+	classColorMode=getBool("classColorMode", classColorMode)
+	lastTargetShow=getBool("lastTargetShow", lastTargetShow)
+	autoDebuffMode=getBool("autoDebuffMode", autoDebuffMode)
+	woundsShow=getBool("woundsShow", woundsShow)
+	targetShow=getBool("targetShow", targetShow)
+	showMana=getBool("showMana", showMana)
+	showEnergy=getBool("showEnergy", showEnergy)
+	showShield=getBool("showShield", showShield)
+	showGradient=getBool("showGradient", showGradient)
+	selectBeforeCast=getBool("selectBeforeCast", selectBeforeCast)
+	ressurectName=getBool("ressurectName", ressurectName)
+	testSpellName=getBool("testSpellName", testSpellName)
+	panelWidth=getBool("panelWidth", panelWidth)
+	panelHeight=getBool("panelHeight", panelHeight)
+	buffName1=getBool("buffName1", buffName1)
+	buffName2=getBool("buffName2", buffName2)
+	buffName3=getBool("buffName3", buffName3)
+	buffName4=getBool("buffName4", buffName4)
+	numBars=getBool("numBars", numBars)
+	numGroup=getBool("numGroup", numGroup)
+	testDistance=getBool("testDistance", testDistance)
+	showStandartRaid=getBool("showStandartRaid", showStandartRaid)
+	showStandartParty=getBool("showStandartParty", showStandartParty)
+	showClassIcon=getBool("showClassIcon", showClassIcon)
+	showDistance=getBool("showDistance", showDistance)
+	showProcent=getBool("showProcent", showProcent)
+	showArrow=getBool("showArrow", showArrow)
+	gorisontalMode=getBool("gorisontalMode", gorisontalMode)
+	twoxtwoMode=getBool("twoxtwoMode", twoxtwoMode)
+	avatarBuffsUpdateTime=getBool("avatarBuffsUpdateTime", avatarBuffsUpdateTime)
+
+	shortMode=panelWidth<shortModeWidth and true or false
+
+	--initAuras()
+	initBars()
+	initStandartInterface()
+	initAvatarBuffs()
+
+
+	if numBars<1 then numBars=1 end
+	if numGroup<1 then numGroup=1 end
+	configButton["priorButton"]=priorityMode
+	configButton["classColorModeButton"]=classColorMode
+	configButton["autoDebuffModeButton"]=autoDebuffMode
+	configButton["woundsShowButton"]=woundsShow
+	configButton["targetButton"]=targetShow
+	configButton["showManaButton"]=showMana
+	configButton["showEnergyButton"]=showEnergy
+	configButton["showShieldButton"]=showShield
+	configButton["showGradientButton"]=showGradient
+	configButton["showStandartRaidButton"]=showStandartRaid
+	configButton["showStandartPartyButton"]=showStandartParty
+	configButton["showClassIconButton"]=showClassIcon
+	configButton["showDistanceButton"]=showDistance
+	configButton["showProcentButton"]=showProcent
+	configButton["showArrowButton"]=showArrow
+	configButton["gorisontalModeButton"]=gorisontalMode
+	configButton["twoxtwoModeButton"]=twoxtwoMode
+	configButton["lastTargetButton"]=lastTargetShow
+	configButton["selectModeButton"]=selectBeforeCast
+	
+	detectedObjects={}
+	updateDetectedObjects(avatar.GetUnitList())
+	
+	if locale["loadedMessage"] then 
+		message(toString(locale["loadedMessage"])..toString(getBuildName(name))) 
+	end
+end
+
+function saveBinds()
+	local mods=getCurrentMod(configButton["shiftButton"], configButton["ctrlButton"], configButton["altButton"], configButton["enemyButton"])
+	binds[mods]={ l="", r="" }
+	binds[mods].l=getText(getChild(configForm, "EditLine1")) or binds[mods].l
+	binds[mods].r=getText(getChild(configForm, "EditLine2")) or binds[mods].r
+	binds[mods].u=getText(getChild(configForm, "EditLine3")) or binds[mods].u
+	binds[mods].d=getText(getChild(configForm, "EditLine4")) or binds[mods].d
+	binds[mods].m=getText(getChild(configForm, "EditLine7")) or binds[mods].m
+end
+
+function change(widget, name)
+	if compare(getName(widget), name) then
+		saveBinds()
+		if configButton[name] then
+			configButton[name]=false
+		else
+			configButton[name]=true
+		end
+		--changeCheckBox(widget)
+		setLocaleText(widget, configButton[name])
+		setCheckBox(widget, configButton[name])
+		showCurrentBinds()
+	end
+	return configButton[name]--getCheckBoxState(widget)
+end
+
+function saveProfile(params, name)
+	if compare(params.sender, "closeButton") then OnConfigChange() return end
+	change(params.widget, "enemyButton")
+	change(params.widget, "shiftButton")
+	change(params.widget, "ctrlButton")
+	change(params.widget, "altButton")
+
+	if runReaction(params.widget) then return end
+
+	priorityMode=change(params.widget, "priorButton")
+	classColorMode=change(params.widget, "classColorModeButton")
+	autoDebuffMode=change(params.widget, "autoDebuffModeButton")
+	woundsShow=change(params.widget, "woundsShowButton")
+	targetShow=change(params.widget, "targetButton")
+	lastTargetShow=change(params.widget, "lastTargetButton")
+	selectBeforeCast=change(params.widget, "selectModeButton")
+	showMana=change(params.widget, "showManaButton")
+	showEnergy=change(params.widget, "showEnergyButton")
+	showShield=change(params.widget, "showShieldButton")
+	showGradient=change(params.widget, "showGradientButton")
+	showStandartRaid=change(params.widget, "showStandartRaidButton")
+	showStandartParty=change(params.widget, "showStandartPartyButton")
+	showClassIcon=change(params.widget, "showClassIconButton")
+	showDistance=change(params.widget, "showDistanceButton")
+	showProcent=change(params.widget, "showProcentButton")
+	showArrow=change(params.widget, "showArrowButton")
+	gorisontalMode=change(params.widget, "gorisontalModeButton")
+	twoxtwoMode=change(params.widget, "twoxtwoModeButton")
+
+	if avatarBuffsGroups[activeGroupBuffs] then
+		avatarBuffsGroups[activeGroupBuffs].fix=change(params.widget, "buffsFixButton")
+	end
+
+	initBars()
+	initAvatarBuffs()
+	initStandartInterface()
+
+	if compare(params.sender, "deleteButtonConfigDebuffsForm") then deleteContainer(debuffs, params.widget) end
+	if compare(params.sender, "deleteButtonConfigMobsForm") then deleteContainer(mobs, params.widget) end
+	if compare(params.sender, "deleteButtonConfigControlsForm") then deleteContainer(controls, params.widget) end
+	if compare(params.sender, "deleteButtonConfigBuffsForm") then
+		deleteContainer(avatarBuffsGroups, params.widget)
+		initAvatarBuffs()
+	end
+	if compare(params.sender, "deleteButtonConfigGroupBuffsForm") then
+		deleteContainer(avatarBuffsGroups and avatarBuffsGroups[activeGroupBuffs] and avatarBuffsGroups[activeGroupBuffs].buffs, params.widget)
+		initAvatarBuffs()
+	end
+	if compare(params.sender, "deleteButtonconfigProfilesForm") then
+		deleteContainer(profiles, params.widget)
+	end
+
+	--if compare(params.sender, "addDebuffButton") then addToTable(debuffs, configDebuffsForm) end
+	if compare(params.sender, "addMobsButton") then addToTable(mobs, configMobsForm) end
+	if compare(params.sender, "addControlButton") then addToTable(controls, configControlsForm) end
+	if compare(params.sender, "addGroupBuffsButton") then
+		addToTable(avatarBuffsGroups, configBuffsForm, "EditLine5")
+		initAvatarBuffs()
+	end
+	if compare(params.sender, "addBuffsButton") then
+		saveGroupBuffs()
+		addToTable(avatarBuffsGroups and avatarBuffsGroups[activeGroupBuffs] and avatarBuffsGroups[activeGroupBuffs].buffs, configGroupBuffsForm, "EditLine4")
+		initAvatarBuffs()
+	end
+	if compare(params.sender, "saveAsProfileButton") then 
+		addToTable(profiles, configProfilesForm) 
+		local profileName=getText(getChild(configProfilesForm, "EditLine1"))
+		saveProfile( { sender="saveButton" }, profileName )
+		loadProfile(profileName)
+		setConfig()
+	end
+	if compare(params.sender, "loadProfileButton") then 
+		local index=getIndexForWidget(params.widget)
+		local profile=index and profiles[index+1]
+		if profile then
+			local profileName=profile.sysName or profile.name
+			loadProfile(profileName)
+			setConfig()
+		end
+	end
+	if compare(params.sender, "saveProfileButton") then 
+		local index=getIndexForWidget(params.widget)
+		local profile=index and profiles[index+1]
+		if profile then
+			local profileName=profile.sysName or profile.name
+			saveProfile( { sender="saveButton" }, profileName )
+		end
+	end
+
+	if compare(params.sender, "editButtonConfigBuffsForm") then
+		local index=getIndexForWidget(params.widget)
+		if index then
+			setActiveGroupBuffs(index+1)
+			show(configGroupBuffsForm)
+		end
+	end
+
+	if compare(params.sender, "buffCheckBox") then
+		local index=getIndexForWidget(params.widget)
+		if index and avatarBuffsGroups and avatarBuffsGroups[activeGroupBuffs] and avatarBuffsGroups[activeGroupBuffs].buffs and avatarBuffsGroups[activeGroupBuffs].buffs[index+1] then
+			changeCheckBox(params.widget)
+			avatarBuffsGroups[activeGroupBuffs].buffs[index+1].buff=getCheckBoxState(params.widget)
+		end
+	end
+	if compare(params.sender, "cdCheckBox") then
+		local index=getIndexForWidget(params.widget)
+		if index and avatarBuffsGroups and avatarBuffsGroups[activeGroupBuffs] and avatarBuffsGroups[activeGroupBuffs].buffs and avatarBuffsGroups[activeGroupBuffs].buffs[index+1] then
+			changeCheckBox(params.widget)
+			avatarBuffsGroups[activeGroupBuffs].buffs[index+1].cd=getCheckBoxState(params.widget)
+		end
+	end
+
+	if compare(params.sender, "closeGroupBuffsButton") then swap(configGroupBuffsForm) end
+
+	if compare(params.sender, "saveGroupBuffsButton") then
+		saveGroupBuffs()
+		swap(configGroupBuffsForm)
+	end
+
+	if not compare(params.sender, "saveButton") then return end
+	local defaultName=toString(avatar.GetActiveBuild())
+	setProfileName()
+	save("profileName", name or activeBuildName)
+	save("profiles", profiles)
+	--message((name or activeBuildName).." сохранен как базовый для профиля "..defaultName)
+		
+	name=name or activeBuildName
+	setProfileName(name)
+	save("profiles", profiles)
+	
+	saveBinds()
+	testSpellName=getText(getChild(configForm, "EditLine6")) or testSpellName
+	ressurectName=getText(getChild(configForm, "EditLine5")) or ressurectName
+
+	panelWidth=tonumber(getText(getChild(configBarsForm, "EditLine1"))) or panelWidth
+	panelHeight=tonumber(getText(getChild(configBarsForm, "EditLine2"))) or panelHeight
+	numBars=tonumber(getText(getChild(configBarsForm, "EditLine4"))) or numBars
+	numGroup=tonumber(getText(getChild(configBarsForm, "EditLine5"))) or numGroup
+
+
+	buffName1=getText(getChild(configBuffsForm, "EditLine1")) or buffName1
+	buffName2=getText(getChild(configBuffsForm, "EditLine2")) or buffName2
+	buffName3=getText(getChild(configBuffsForm, "EditLine3")) or buffName3
+	buffName4=getText(getChild(configBuffsForm, "EditLine4")) or buffName4
+	
+	avatarBuffsUpdateTime=getText(getChild(configBuffsForm, "EditLine6")) or avatarBuffsUpdateTime
+
+	testDistance=tonumber(getText(getChild(configBarsForm, "EditLine6"))) or testDistance
+
+	saveContainer(debuffs, configDebuffsForm)
+	saveContainer(mobs, configMobsForm)
+	saveContainer(controls, configControlsForm)
+	saveContainer(avatarBuffsGroups, configBuffsForm)
+
+
+	shortMode=panelWidth<shortModeWidth and true or false
+	initAuras()
+	initBars()
+	initAvatarBuffs()
+
+	save("profiles", profiles)
+	save("binds", binds)
+	save("debuffs", debuffs)
+	save("mobs", mobs)
+	save("controls", controls)
+	save("raid_filter", raid_filter)
+	save("priorityMode", priorityMode)
+	save("classColorMode", classColorMode)
+	save("autoDebuffMode", autoDebuffMode)
+	save("woundsShow", woundsShow)
+	save("targetShow", targetShow)
+	save("showMana", showMana)
+	save("showEnergy", showEnergy)
+	save("showShield", showShield)
+	save("showGradient", showGradient)
+	save("showStandartRaid", showStandartRaid)
+	save("showStandartParty", showStandartParty)
+	save("showClassIcon", showClassIcon)
+	save("showDistance", showDistance)
+	save("showProcent", showProcent)
+	save("showArrow", showArrow)
+	save("gorisontalMode", gorisontalMode)
+	save("twoxtwoMode", twoxtwoMode)
+	save("lastTargetShow", lastTargetShow)
+	save("selectBeforeCast", selectBeforeCast)
+	save("ressurectName", ressurectName)
+	save("testSpellName", testSpellName)
+	save("panelWidth", panelWidth)
+	save("panelHeight", panelHeight)
+	save("buffName1", buffName1)
+	save("buffName2", buffName2)
+	save("buffName3", buffName3)
+	save("buffName4", buffName4)
+	save("testDistance", testDistance)
+	save("numBars", numBars)
+	save("numGroup", numGroup)
+	save("avatarBuffsGroups", avatarBuffsGroups)
+	save("avatarBuffsUpdateTime", avatarBuffsUpdateTime)
+	--if locale["savedMessage"] then message(locale["savedMessage"]) end
+	if params and params.widget then OnConfigChange() end
+	clearCache()
+	
+	if locale["savedMessage"] then 
+		local mess=toString(locale["savedMessage"])..toString(getBuildName(name))
+		--if not compare(name, avatar.GetActiveBuild()) then mess=mess..toString(locale["savedAddMessage"])..toString(getBuildName(defaultName))  end
+		message(mess) 
+	end
+end
+
+function getDebuffText(buffId)
+	local buffInfo=buffId and object.GetBuffInfo(buffId)
+	if buffInfo and buffInfo.isStackable and buffInfo.stackCount then  --and buffInfo.isGradual
+		return toString(buffInfo.stackCount)
+	elseif buffInfo and buffInfo.remainingMs then
+		return toString(math.ceil(buffInfo.remainingMs/1000))
+	end
+	return ""
+end
+
+--------------------------------------------------------------------------------
+-- Boss detect and update
+--------------------------------------------------------------------------------
+
+local function indexOfBoss(t, o)
+	for i, v in ipairs(t) do if v.id == o then return i end end
+	return 0
+end
+
+local function indexOfObject(t, o)
+	for i, v in ipairs(t) do if v==o then return i end end
+	return 0
+end
+
+local function isBoss(uid)
+	local quality = unit.GetQuality(uid)
+	return quality == UNIT_QUALITY_MINI_BOSS or
+		quality == UNIT_QUALITY_BOSS or
+		quality == UNIT_QUALITY_RAID_BOSS or
+		quality == UNIT_QUALITY_RAID_ELITE or
+		quality == UNIT_QUALITY_ELITE or
+		quality == UNIT_QUALITY_FLAVOR_ELITE
+end
+
+local function updateBossTarget()
+	for i, boss in ipairs(boss_units) do
+		if isExist(boss.id) then boss.target = unit.GetTarget(boss.id)
+		else boss.target = nil end
+	end
+end
+
+--------------------------------------------------------------------------------
+-- Raid list update
+--------------------------------------------------------------------------------
+
+local function calcPlayerPriority(p)
+	--if wtPlayerBar:IsFocused() then return end
+	local priority = p.health
+	if not priority then priority=0 end
+	if not p.enemy then
+		if p.may_by_tank then priority = priority - tank_priority*(90-p.health)/10 end
+		local dist=getDistanceToTarget(p.id)
+		if dist and dist>40 then priority = priority + 80 + (dist-40) end
+		if not dist then priority = priority + 1000 end
+		if p.debuffed then priority = priority - debuff_priority end
+		local inCombat = object.IsInCombat( avatar.GetId() )
+		if p.dead then
+			if inCombat then priority = priority + 100 end
+			if not inCombat then priority = priority - 200 end
+		end
+	end
+	p.priority = priority
+end
+
+local function playerIsTargetBoss(pid)
+	for i, boss in ipairs(boss_units) do
+		if boss.target == pid then return true end
+	end
+	return false
+end
+
+function getBuffs(targetId)
+	local unitBuffs=isExist(targetId) and object.GetBuffs(targetId)
+	local buffs={}
+	if not unitBuffs then return buffs end
+	for i, buff in pairs(unitBuffs) do
+		local buffInfo = buff and object.GetBuffInfo(buff)
+		if buffInfo and buffInfo.name then
+			buffs[string.lower(toString(buffInfo.name))]=buffInfo
+		end
+	end
+	return buffs
+end
+
+local function getUnitInfo(targetId)
+	if not isExist(targetId) then return nil end
+	local class=unit.GetClass(targetId)
+	local healthInfo=object.GetHealthInfo(targetId)
+	local __player = {
+		id = targetId,
+		name = object.GetName(targetId),
+		className = class and class.className,
+		health = healthInfo and healthInfo.valuePercents,
+		may_by_tank = playerIsTargetBoss(targetId),
+		debuffed = testBuffs(targetId),
+		dead = object.IsDead(targetId),
+		enemy = isEnemy(targetId),
+		isPlayer = unit.IsPlayer(targetId),
+		isFar = object.IsFar(targetId),
+		friend = isFriend(targetId),
+		wounds=unit.GetWoundsComplexity(targetId),
+		buffs=getBuffs(targetId),
+		isAfk=unit.IsPlayer(targetId) and unit.IsAfk(targetId)
+	}
+	calcPlayerPriority(__player)
+	return __player
+end
+
+local cacheBar={}
+
+local function insertIntoTable(t, info, priorityOffset)
+	local i=t and type(t)=="number" and t
+	local j=nil
+
+	local t=type(t)=="number" and players[t] or type(t)=="table" and t
+	if not info or not t then return end   ---ADDED
+	local id=info
+	if type(info)=="table" then id=info.id end
+	local targetInfo=id and getUnitInfo(id)
+	if targetInfo then
+		if priorityOffset then
+			targetInfo.priority=targetInfo.priority-priorityOffset
+		end
+		table.insert(t, targetInfo)
+		j=table.maxn(t)
+	elseif type(info)=="table" then
+		table.insert(t, {
+			id=info.id,
+			persId=info.uniqueId or info.persistentId,
+			name=toString(info.name),
+			isFar=info.state==GROUP_MEMBER_STATE_FAR,
+			isPlayer=info.state~=GROUP_MEMBER_STATE_MERC,
+			isAfk=info.state==GROUP_MEMBER_STATE_AFK,
+			isOffline=info.state==GROUP_MEMBER_STATE_OFFLINE,
+			className=info.className,
+			priority=9999
+		})
+		j=table.maxn(t)
+	end
+	if i and j then
+		local id=t[j].id
+		if not id or not cacheBar then return end
+		if not cacheBar[id] then cacheBar[id]={} end
+		table.insert(cacheBar[id], { i=i, j=j })
+	end
+end
+
+local function updateTargetInfo()
+	players[insertGroup]={}
+	local myId=avatar.GetId()
+
+	local target=avatar.GetTarget()
+	if targetShow and isExist(target) then insertIntoTable(insertGroup, target, target_priority) end
+
+	local lastTarget=getLastTarget()
+	if lastTargetShow and lastTarget~=avatar.GetTarget() and lastTarget~=myId and isExist(lastTarget) then
+		insertIntoTable(insertGroup, lastTarget, target_priority/2)
+	end
+
+	for i, objectId in pairs(detectedObjects) do
+		local test1=targetShow and objectId==target
+		local test2=lastTargetShow and objectId==lastTarget
+		if isExist(objectId) and not object.IsDead(objectId) and not test1 and not test2 then
+			insertIntoTable(insertGroup, objectId, mob_priority)
+		end
+	end
+end
+
+local function updateInfo()
+	for i=0, numGroup-1 do players[i]={} end
+	cacheBar={}
+
+	insertGroup=1
+	if isRaid() then
+		local members = raid.GetMembers()
+		for ig, group in pairs(members) do
+			local plus=false
+			if raid_filter[ig+1] then
+				for pi, player in pairs(group) do
+					if not priorityMode then plus=true end -- or insertGroup==1
+					insertIntoTable(insertGroup-1, player)
+				end
+				--showAuras(insertGroup-1)
+			end
+			if plus then
+				insertGroup=insertGroup+1
+			end
+		end
+		if not priorityMode then insertGroup=insertGroup-1 end
+		if insertGroup==0 then hideAuras() end
+	elseif isGroup() then
+		if raid_filter[1] then
+			local members = group.GetMembers()
+			insertIntoTable(0, members[0])
+			for pi, player in ipairs(members) do
+				insertIntoTable(0, player)
+			end
+		else
+			insertGroup=0
+		end
+		--showAuras(0)
+	else
+		if raid_filter[1] then
+			insertIntoTable(0, avatar.GetId())
+		else
+			insertGroup=0
+		end
+		--showAuras(0)
+	end
+
+	if not moveMode then 	updateTargetInfo() 		end
+	
+	for i=0, insertGroup-1 do
+		showAuras(i)
+	end
+	hideAuras(insertGroup)
+	
+	if priorityMode then 	for i=0, numGroup-1 do table.sort(players[i], function(v1, v2) return v1.priority < v2.priority end) end   end
+end
+
+function setAngle(arrowIcon, targetId)
+	local angle=getAngleToTarget(targetId)
+	if angle and arrowIcon then
+		angle=-avatar.GetDir()+angle
+		local curAngle=arrowIcon:GetRotation()
+		--if curAngle>3.14 then curAngle=curAngle - 6.28 end
+		arrowIcon:PlayRotationEffect(curAngle, angle, 200, EA_MONOTONOUS_INCREASE)
+	end
+end
+--[[
+local cacheGS={}
+
+local lastInspect=nil
+local getGSMode=false
+
+function OnEventInspectStarted()
+	if cacheGS and lastInspect then
+		cacheGS[lastInspect]=unit.GetGearScore(unitId)
+	end
+	getGSMode=false
+end
+
+function getGS(unitId)
+	if not unitId or not unit.GetGearScore or not isExist(unitId) then return nil end
+	if cacheGS[unitId] then return cacheGS[unitId] end
+	--if avatar.IsTargetInspected() then
+	--	avatar.EndInspect()
+	--end
+	--selectTarget(unitId)
+	avatar.StartInspect(unitId) 
+	getGSMode=true
+	--cacheGS[unitId]=unit.GetGearScore(unitId)
+	--avatar.EndInspect()
+	--return cacheGS[unitId]
+end
+
+--После доработки функции получения ГС
+--if moveMode and isRaid() then
+--	local GS=isExist(unitInfo.id) and unit.GetGearScore and unit.GetGearScore(unitInfo.id)
+--	if GS then
+--		GS=math.floor(GS/100)/10
+--		setText(procText, formatText(toString(GS).."k"))
+--	end
+--end
+
+--local color = { r = 1, g = 1, b = 1, a = 0 }
+--unit.Select( unitId, true, decalId, color, 2 )
+]]
+
+local randColor = { r=0, g=0, b=0, a=0 }
+local leaderName = nil
+
+local function setBarInfo(playerBar, unitInfo)
+	if not playerBar then return nil end
+	--widget:IsVisible()
+	if unitInfo then
+		show(playerBar)
+
+		local bar=getChild(playerBar, "HealthBar")
+		local manaBar=getChild(playerBar, "ManaBar")
+		local shieldBar=getChild(playerBar, "ShieldBar")
+		local barBackground=getChild(playerBar, "HealthBarBackground")
+		local classIcon=getChild(playerBar, "ClassIcon")
+		local text=getChild(playerBar, "PlayerNameText")
+		local distText=getChild(playerBar, "PlayerDistText")
+		local woundsText=getChild(playerBar, "WoundsText")
+		local procText=getChild(playerBar, "PlayerProcText")
+		local dist = getDistanceToTarget( unitInfo.id )
+		local arrowIcon=getChild(playerBar, "ArrowIcon")
+		local checkIcon=getChild(playerBar, "CheckIcon")
+		local d = unitInfo.health and unitInfo.health/100 or 1
+		local woundsResists=isExist(unitInfo.id) and 100*(1-1/((1+unit.GetRuneWoundsComplexity(unitInfo.id)/10)*(unit.GetRelativeWoundsComplexity(unitInfo.id)))) or 0
+		local showDistance=dist and showDistance or false
+
+		if readyCheckMode and readyCheck and readyCheck.members then
+			local state=nil
+			for i,j in pairs(readyCheck.members) do
+				if compare(j.name, unitInfo.name) then state=j.state end
+			end
+			if state then
+				setBackgroundTexture(checkIcon, texCheckState[state])
+				hide(procText)
+				show(checkIcon)
+			else
+				show(procText)
+				hide(checkIcon)
+			end
+		else
+			show(procText)
+			hide(checkIcon)
+		end
+
+		align(distText, nil, WIDGET_ALIGN_CENTER)
+		move(distText, nil, 0)
+
+
+		resize(bar, panelWidth * d-5, nil)
+
+		if compare(leaderName, unitInfo.name) then
+			unitInfo.name="(*)"..(toString(unitInfo.name) or "")
+		end
+
+		if unitInfo.isOffline then
+			unitInfo.name="[Off]"..(toString(unitInfo.name) or "")
+		elseif unitInfo.isAfk then
+			unitInfo.name="[AFK]"..(toString(unitInfo.name) or "")
+		elseif unitInfo.dead then
+			unitInfo.name="[Dead]"..(toString(unitInfo.name) or "")
+		end
+
+
+
+		local nameWidth=panelWidth-(showClassIcon and 20 or 0)-(showProcent and not (dist and dist>40 and showArrow) and 38 or 0)-(showDistance and 20 or 0)-(shortMode and 0 or showDistance and 20 or 0)
+		align(text, WIDGET_ALIGN_LOW)
+		resize(text, nameWidth)
+		setText(text, unitInfo.name, "LogColorYellow")
+
+		if unitInfo.health and not readyCheckMode then
+			if showProcent then
+				if showDistance then
+					move(procText, 38)
+				else
+					move(procText, 0)
+				end
+				show(procText)
+				setText(procText, toString(unitInfo.health).."%", "LogColorYellow")
+			else
+				hide(procText)
+			end
+		end
+
+		if woundsShow and woundsResists~=0 then
+			show(woundsText)
+			setText(woundsText, "-"..toString(math.floor(woundsResists)).."%", (woundsResists<50 and "ColorGreen" or woundsResists<75 and "ColorYellow" or "ColorRed"), "center")
+		else
+			hide(woundsText)
+		end
+
+		if showDistance and dist then
+			show(distText)
+			setText(distText, math.floor(dist), "LogColorYellow")
+		else
+			hide(distText)
+		end
+
+		local barColor={ r = 0.8; g = 0.8; b = 0; a = 1.0 }
+		if unitInfo.isOffline then
+			barColor={ r = 0.3; g = 0.3; b = 0.3; a = 0.5 }
+		elseif unitInfo.isFar	then
+			barColor={ r = 0.3; g = 0.3; b = 0.3; a = 1.0 }
+		elseif unitInfo.debuffed	then
+			if dist and dist<testDistance then
+				barColor={ r = 0.2; g = 0.8; b = 0.8; a = 1.0 }
+			else
+				barColor={ r = 0; g = 0.6; b = 0.6; a = 1.0 }
+			end
+		elseif classColorMode and unitInfo.className then
+			barColor=classColors[unitInfo.className]
+		elseif unitInfo.enemy then
+			barColor={ r = 1.0; g = 0.2; b = 0.2; a = 1.0 }
+		elseif dist and dist<testDistance then
+			local coef=showGradient and d or 1
+			local test=true
+			local first=true
+			for i, token in findWord(testSpellName) do
+				if first then test=testSpell(token or i, unitInfo.id) end
+				first=false
+			end
+			if compare(testSpellName, "") or test then
+				barColor={ r = 0.3 + (1-coef)*0.5; g = 0.1+0.7*coef; b = 0; a = 1.0 }
+			else
+				barColor={ r = 0.3 + (1-coef)*0.5; g = 0.5*coef; b = 0; a = 1.0 }
+			end
+		elseif unitInfo.friend and (dist and dist>39 or not unitInfo.isFar) then
+			barColor={ r = 0.15; g = 0.4; b = 0; a = 1.0 }
+		end
+
+		--barColor=randColor
+
+		if shortMode then
+			resize(distText, 20)
+			move(arrowIcon, 0)
+			if showDistance then
+				move(procText, 20)
+			else
+				move(procText, 0)
+			end
+		else
+			resize(distText, 35)
+			move(arrowIcon, 16)
+			if showDistance then
+				move(procText, 40)
+			else
+				move(procText, 0)
+			end
+		end
+
+		if dist and dist>40 and showArrow then
+			show(arrowIcon)
+			setAngle(arrowIcon, unitInfo.id)
+			align(distText, nil, WIDGET_ALIGN_LOW)
+			move(distText, nil, 30)
+			show(arrowIcon)
+			if shortMode then hide(procText) end
+		else
+			hide(arrowIcon)
+		end
+
+		setBackgroundColor(bar, barColor)
+
+		local mana=isExist(unitInfo.id) and unit.GetManaPercentage(unitInfo.id)
+		local type=isExist(unitInfo.id) and unit.GetClass(unitInfo.id)
+		type=type and type.manaType
+
+		if type and type==MANA_TYPE_MANA and showMana and mana then
+			show(manaBar)
+			setBackgroundColor(manaBar, manaColor)
+			resize(manaBar, mana/100 * panelWidth - 5)
+		elseif type and type==MANA_TYPE_ENERGY and showEnergy and mana then
+			show(manaBar)
+			setBackgroundColor(manaBar, energyColor)
+			resize(manaBar, mana/100 * panelWidth - 5)
+		else
+			hide(manaBar)
+		end
+
+		local healthInfo=isExist(unitInfo.id) and object.GetHealthInfo(unitInfo.id)
+		local shield=healthInfo and healthInfo.additionalPercents
+
+		if showShield and shield then
+			show(shieldBar)
+			setBackgroundColor(shieldBar, shieldColor)
+			resize(shieldBar, shield/100 * panelWidth - 5)
+		else
+			hide(shieldBar)
+		end
+
+		if showClassIcon then
+			show(classIcon)
+			move(text, 24, 0)
+			setBackgroundTexture(classIcon, texIcons[unitInfo.className or "UNKNOWN"])
+		else
+			hide(classIcon)
+			move(text, 6, 0)
+		end
+
+		if not moveMode then
+			showBuff(getChild(playerBar, "Debuff"), unitInfo.debuffed)
+		elseif aurasNames then
+			local auraInfo=nil
+			for i, k in ipairs(aurasNames) do
+				for j, m in ipairs(k) do
+					auraInfo=auraInfo or testBuffO(unitInfo, m, true)
+				end
+			end
+			--showBuff(getChild(playerBar, "Debuff"), auraInfo)
+		end
+		
+		if shopMode and locale["shopANames"] then
+			showBuff(getChild(playerBar, "Buff1"), testBuff(unitInfo.id, locale["elNames"]))
+			showBuff(getChild(playerBar, "Buff2"), testBuff(unitInfo.id, locale["shopANames"]) or testBuff(unitInfo.id, locale["smallAShopNames"]))
+			showBuff(getChild(playerBar, "Buff3"), testBuff(unitInfo.id, locale["shopDNames"]) or testBuff(unitInfo.id, locale["smallDShopNames"]))
+			showBuff(getChild(playerBar, "Buff4"), testBuff(unitInfo.id, locale["foodWNames"]) or testBuff(unitInfo.id, locale["foodSNames"]))
+		else
+			showBuff(getChild(playerBar, "Buff1"), testBuffO(unitInfo, buffName1))
+			showBuff(getChild(playerBar, "Buff2"), testBuffO(unitInfo, buffName2))
+			showBuff(getChild(playerBar, "Buff3"), testBuffO(unitInfo, buffName3))
+			showBuff(getChild(playerBar, "Buff4"), testBuffO(unitInfo, buffName4))		
+		end
+		
+		
+
+		--local GS=getGS(unitInfo.id)
+		--if GS then
+		--	GS=math.floor(GS/100)/10
+		--	setText(procText, formatText(toString(GS).."k"))
+		--end
+
+		if moveMode and isRaid() then
+			local persId=getPersIdToId(unitInfo.persId or unitInfo.id)
+			if persId==movePid then
+				setBackgroundColor(barBackground, { r=0; g=0; b=1; a=1 })
+			end
+		elseif unitInfo.id and unitInfo.id==getCurrentTarget() then
+			setBackgroundColor(barBackground, { r=0; g=1; b=0; a=1 })
+		elseif unitInfo.may_by_tank then
+			setBackgroundColor(barBackground, { r=1; g=0; b=0; a=1 })
+		else
+			setBackgroundColor(barBackground, { r=1; g=1; b=1; a=1 })
+		end
+
+	else
+		hide(playerBar)
+	end
+end
+
+local function updateBars(bar)
+	if not bar then
+		removeAllAddBars()
+		leaderName=getLeaderName()
+	end
+	local movePidGroup=not bar and getGroupFromPersId(movePid)
+	local pidGroupNum=0
+
+	if not bar and players and players[movePidGroup] then
+		for j, k in pairs(players[movePidGroup]) do
+			if k then pidGroupNum=pidGroupNum+1 end
+		end
+	end
+
+	for i=0, numGroup-1 do
+		local numActiveBars=0
+		if players and players[i] and (not bar or bar==i) then
+			for j=1, numBars do
+				if players[i][j] then
+					if j>activeBars then activeBars=j end
+					activeGroup=i+1
+					numActiveBars=numActiveBars+1
+				end
+				if wtPlayerBars and wtPlayerBars[i] then
+					setBarInfo(wtPlayerBars[i][j], players[i][j])
+				end
+			end
+		end
+		if not bar and moveMode and movePidGroup and movePidGroup~=i and numActiveBars>0 and numActiveBars<6 and not (i>movePidGroup and pidGroupNum<2) then initAddBar(activeGroup-1, numActiveBars+1) end
+	end
+	if not bar and moveMode then
+		if activeBars<6 then activeBars=activeBars+1 end
+		if activeGroup<4 and pidGroupNum>1 then
+			activeGroup=activeGroup+1
+			initAddBar(activeGroup-1, 1)
+		end
+	end
+	if not bar then
+		local width=0
+		local height=topPanelHeight+aurasPanelHeight
+		if gorisontalMode then
+			width=width+activeBars*panelWidth
+			height=height+activeGroup*panelHeight
+			if twoxtwoMode and activeGroup>2 then 
+				width=width+activeBars*panelWidth
+				height=height-(activeGroup==3 and 1 or 2)*panelHeight
+			end
+			--resize(panelForm, math.max(topPanelWidth, activeBars*panelWidth), activeGroup*panelHeight+topPanelHeight+aurasPanelHeight)
+		else 
+			width=width+activeGroup*panelWidth
+			height=height+activeBars*panelHeight
+			if twoxtwoMode and activeGroup>2 then 
+				width=width-(activeGroup==3 and 1 or 2)*panelWidth
+				height=height+activeBars*panelHeight 
+			end
+			--resize(panelForm, math.max(topPanelWidth, activeGroup*panelWidth), activeBars*panelHeight+topPanelHeight+aurasPanelHeight)
+		end
+		resize(panelForm, math.max(topPanelWidth, width), height)
+	end
+end
+
+function updatePanel()
+	if avatar.IsExist() then
+		if isRaid() then 	for i = 2, 4 do show(wtPartyButtons[i])	end
+		else 				for i = 2, 4 do hide(wtPartyButtons[i]) end end
+
+		if group.IsLeader() or raid.IsLeader() then
+			show(getChild(wtTopPanel, "CheckButton"))
+		else
+			hide(getChild(wtTopPanel, "CheckButton"))
+		end
+
+		updateBossTarget()
+		updateInfo()
+		updateBars()
+	end
+end
+
+function OnEventAvatarDirChanged()
+
+end
+
+--------------------------------------------------------------------------------
+-- Avatar buffs
+--------------------------------------------------------------------------------
+
+local buffInfos={}
+
+function getCooldown(spellId)
+	local cdInfo=spellId and spellLib.GetCooldown(spellId)
+	--local state=spellId and spellLib.GetState(spellId)
+	if cdInfo then -- state and
+		--if not state.enabled then 	return cdInfo.remainingMs end
+		return cdInfo.remainingMs
+		--else						return 0 					end
+	end
+	return nil
+end
+
+local function updateAvatarCooldown()
+	if not buffInfos then return end
+	for i, m in pairs(buffInfos) do
+		if m then
+			for k, j in pairs(m) do
+				local cooldown=getCooldown(j.spellId)
+				if cooldown and avatarBuffsGroups and avatarBuffsGroups[i] and avatarBuffsGroups[i].buffs and avatarBuffsGroups[i].buffs[k] and not avatarBuffsGroups[i].buffs[k].time then
+					if avatarBuffsGroups[i].target=="player" then
+						j.time=cooldown/1000
+					end
+				end
+			end
+		end
+	end
+end
+
+local function timerAvatarCooldown()
+	if not buffInfos then return end
+	for i, m in pairs(buffInfos) do
+		if m then
+			for k, j in pairs(m) do
+				if j.time then
+					if j.time>0 then j.time=j.time-1.0 end
+					if j.time<0 then j.time=0 end
+				end
+			end
+		end
+	end
+end
+
+local function setBuffInfo(group, index, buffInfo, time, spellId)
+	local icon=	buffInfo and buffInfo.texture or
+				spellId and spellLib.GetIcon(spellId)
+	--if not buffInfo then return end
+
+	if not buffInfos[group] then buffInfos[group]={} end
+	if not buffInfos[group][index] then
+		buffInfos[group][index]={time=0}
+	end
+	if buffInfos[group][index].time==0 and time and buffInfo then
+		buffInfos[group][index].time=time
+	end
+
+	buffInfos[group][index].texture=icon or buffInfos[group][index].texture
+	buffInfos[group][index].spellId=spellId or buffInfos[group][index].spellId
+end
+
+local function getBuffInfo(group, index)
+	return buffInfos and buffInfos[group] and buffInfos[group][index] and
+		{ remainingMs=buffInfos[group][index].time and buffInfos[group][index].time>2 and buffInfos[group][index].time*1000 or 0, texture=buffInfos[group][index].texture }
+end
+
+local function updateAvatarBuff(group, index, target, info)
+	if not info or not info.name then return end
+	local name=info.name
+
+	if info.cd==nil then info.cd=avatarCDDefault end
+	if info.buff==nil then info.buff=avatarBuffDefault end
+	if info.type==nil then info.type=getTypeFromName(name) end
+
+	local buff=info.buff
+	local cd=info.cd
+	local type=info.type
+	local time=info.time
+	local avatarMode=target=="player"--target~="target" and target~="boss"
+	local objectId=avatarMode and avatar.GetId() or avatar.GetTarget()
+
+	local buffInfo=(buff or time) and testBuff(objectId, name)
+	local isBuff=buffInfo and true or false
+	local itemId=type==TYPE_ITEM and getItemIdFromName(name)
+	local spellId=itemId and itemLib.GetSpell(itemId) or buffInfo and buffInfo.producer and buffInfo.producer.casterId==objectId and buffInfo.producer.spellId or type==TYPE_SPELL and getSpellIdFromName(name)
+
+	if itemId and (cd or buff and isBuff) then
+		local itemInfo=itemLib.GetItemInfo(itemId)
+		if itemInfo and itemInfo.icon then
+			if not buffInfo then buffInfo={} end
+			buffInfo.texture=itemInfo.icon
+		end
+	end
+
+	setBuffInfo(group, index, buffInfo, time, spellId)
+
+	setFade(getChild(avatarBuffs[group][index], "DotIcon"), 1.0)
+
+	if cd and (not buff or not isBuff) then
+		buffInfo=getBuffInfo(group, index)
+		if buffInfo and buffInfo.remainingMs and buffInfo.remainingMs>0 or time then
+			setFade(getChild(avatarBuffs[group][index], "DotIcon"), 0.4)  	--buffInfo=nil
+		end
+	end
+
+	showBuff(avatarBuffs[group][index], buffInfo, nil, true, avatarBuffsGroups[group].size)
+end
+
+local function updateAvatarBuffs()
+	updateAvatarCooldown()
+	for i, k in ipairs(avatarBuffsGroups) do
+		if k and k.buffs then
+			--local objectId=compare(k.target, "target") and avatar.GetTarget() or avatar.GetId()
+			--message(objectId)
+			for j, m in ipairs(k.buffs) do
+				updateAvatarBuff(i, j, k.target, m)
+			end
+		end
+	end
+end
+
+--------------------------------------------------------------------------------
+-- Events
+--------------------------------------------------------------------------------
+
+function OnEventActionResultSpecialSpell(params)
+    if params and params.unitId==avatar.GetId() then
+		updateAvatarBuffs()
+	end
+	--message(object.GetName(params.unitId))
+	--message(params.targetId and object.GetName(params.targetId))
+	--message(spellLib.GetDescription(params.spellId).name)
+	--message(params.sysId=="ENUM_ACTION_RESULT_SPECIAL_UNKNOWN" and "unknown"
+	--	or	params.sysId=="ENUM_ACTION_RESULT_SPECIAL_STARTED" and "started"
+	--	or	params.sysId=="ENUM_ACTION_RESULT_SPECIAL_LAUNCHED" and "launched"
+	--	or	params.sysId=="ENUM_ACTION_RESULT_SPECIAL_NO_RANGED_WEAPON" and "no_ranged_weapon")
+end
+
+function testWhisperMode()
+	if whisperMode then
+		local input = mission.GetChatInput()
+		if not input.hasPrefix or compare(input.cmdArg, "") then
+			whisperMode=false
+			hide(getChild(getChild(stateMainForm, "ChatInput"), "ChatInput"))
+		end
+	end
+end
+
+function OnEventSecondTimer(el_time)
+	for i, uid in pairs(detectedObjects) do
+		if not isWanted(uid) then
+			local index_object=indexOfObject(detectedObjects, uid)
+			if index_object~=0 then
+				table.remove(detectedObjects, index_object)
+			end
+		end
+	end
+	updatePanel()
+	--updateAvatarBuffs()
+	timerAvatarCooldown()
+	--updateAvatarCooldown()
+
+	testWhisperMode()
+end
+
+function OnAddonHealthChanged(params)
+	--if params and params.status then
+		--if params.status==ENUM_ADDON_HEALTH_STATUS_AVERAGE 	then message(params.addonName)	end
+		--if params.states==ENUM_ADDON_HEALTH_STATUS_BAD	    then message(params.addonName) end
+	--end
+end
+
+function OnEventChatMessage(params)
+	testWhisperMode()
+end
+
+function updateBar(unitId)
+	if not isExist(unitId) then return nil end
+	if not priorityMode and cacheBar and cacheBar[unitId] then
+		for k, m in ipairs(cacheBar[unitId]) do
+			local i=m.i
+			local j=m.j
+			if wtPlayerBars and wtPlayerBars[i] and players and players[i] and players[i][j] and players[i][j].id and players[i][j].id==unitId then
+				players[i][j]=getUnitInfo(unitId)
+				setBarInfo(wtPlayerBars[i][j], players[i][j])
+			end
+		end
+	end
+	if priorityMode then
+		for i=0, numGroup-1 do
+			for j=1, numBars do
+				if wtPlayerBars and wtPlayerBars[i] and players and players[i] and players[i][j] and players[i][j].id and players[i][j].id==unitId then
+					players[i][j]=getUnitInfo(unitId)
+					setBarInfo(wtPlayerBars[i][j], players[i][j])
+				end
+			end
+		end	
+	end
+end
+
+function OnEventUnitHealthChanged(params)
+	local id=params and (params.unitId or params.id)
+	updateBar(id)
+end
+
+function OnEventAvatarTargetChanged(params)
+	setCurrentTarget(avatar.GetTarget())
+	updatePanel() --optimize
+	--local targetId=avatar.GetTarget()
+	--if targetId then
+		--object.AddToProjected(targetId, 1)
+		--local info=object.GetProjectedInfo(targetId)
+		--message(info and not info.isLos)
+	--end
+end
+
+function OnEventRaidAppeared()
+	for i = 2, 4 do show(wtPartyButtons[i]) end
+	readyCheckMode=false
+	initStandartInterface()
+end
+
+function OnEventRaidDisappearred()
+	moveMode=false
+	readyCheckMode=false
+	initStandartInterface()
+end
+
+function OnEventGroupAppeared()
+	for i = 2, 4 do hide(wtPartyButtons[i]) end
+	readyCheckMode=false
+	initStandartInterface()
+end
+
+function OnEventGroupDisappearred()
+	readyCheckMode=false
+	initStandartInterface()
+end
+
+function OnEventUnitChanged(units)
+	for i, uid in pairs(units.despawned) do
+		if uid then
+			local index = indexOfBoss(boss_units, uid)
+			if index ~= 0 then table.remove(boss_units, index) end
+			local index_object=indexOfObject(detectedObjects, uid)
+			if index_object~=0 then
+				table.remove(detectedObjects, index_object)
+			end
+		end
+	end
+	for i, uid in pairs(units.spawned) do
+		if uid and not unit.IsPlayer(uid) and isBoss(uid) then
+			table.insert(boss_units, { id = uid, quality = unit.GetQuality(uid) })
+		end
+		if isExist(uid) and isWanted(uid) then
+			table.insert(detectedObjects, uid)
+		end
+	end
+
+	updateTargetInfo()
+	updateBars(insertGroup)
+end
+
+function tested(buffId, name)
+	local buffInfo=buffId and object.GetBuffInfo(buffId)
+	if buffInfo and compare(name, buffInfo.name) then return true end
+	return false
+end
+
+function OnEventObjectBuffAdded(params)
+	--if params.objectId and object.IsExist(params.objectId) then
+	--local isBuffChanged = params.objects[ unitId ][ buffId ]
+	if isWanted(params.objectId) and indexOfObject(detectedObjects, params.objectId)==0 then
+		table.insert(detectedObjects, params.objectId)
+	end
+	--if params.objectId==avatar.GetId() then updateAvatarBuffs() end  --optimize
+end
+
+function OnEventObjectBuffsElementChanged(params)
+	--local avatarBuffsChanged=params and params.objects and params.objects[avatar.GetId()]
+	--if avatarBuffsChanged then
+	--	message("true")
+	--	local update=false
+	---	for i,j in pairs(avatarBuffsChanged) do
+	--		if j then update=true end
+	--	end
+	--	if update then updateAvatarBuffs() end   --optimize
+	--end
+end
+
+function OnEventObjectBuffsChanged(params)
+	if params.objectId==avatar.GetId() then updateAvatarBuffs() end
+end
+
+--------------------------------------------------------------------------------
+-- Widget events
+--------------------------------------------------------------------------------
+
+local function OnPlayerSelect(params, clickType)
+	--message("usage "..tostring(gcinfo()).."kb")
+	if not params then return end
+	mouseX=params.x
+	mouseY=params.y
+
+	local ctrl, alt, shift=getModFromFlags(params.kbFlags)
+	for i=0, numGroup-1 do
+		for j=1, numBars do
+			if equals(params.widget, wtPlayerBars[i][j]) then
+				if players[i][j] then
+					local pid=players[i][j].id
+					--if players[i][j].dead and not players[i][j].enemy then
+					--	ressurect(pid)
+					--else
+						use(binds[getCurrentMod(shift, ctrl, alt, isEnemy(pid))], players[i][j], clickType)
+					--end
+					randColor={r=math.random(), g=math.random(), b=math.random(), a=1}
+					updateBar(pid)
+				end
+				return
+			end
+		end
+	end
+end
+
+local function OnLeftClick(params)
+	OnPlayerSelect(params, "mouseLeft")
+end
+
+local function OnRightClick(params)
+	OnPlayerSelect(params, "mouseRight")
+end
+
+local function OnWheelUp(params)
+
+end
+
+local function OnWheelDown(params)
+
+end
+
+local function OnPointing(params)
+	--for i=0, numGroup-1 do
+	--	for j=1, numBars do
+	--		local background=getChild(wtPlayerBars[i][j], "HealthBarBackground")
+	--		if equals(params.widget, wtPlayerBars[i][j]) then
+	--			setBackgroundColor(background, {r=1,g=1,b=0,a=1})
+	--			return
+	--		end
+	--	end
+	--end
+end
+
+function moveModeClick(reaction)
+	moveTo(getAddBarId(reaction and reaction.widget))
+end
+
+local function OnShowPanel(reaction)
+	if reaction.active then
+		setFade(reaction.widget, 1)
+	else
+		setFade(reaction.widget, 0.3)
+	end
+end
+
+local function OnAurasChange(params)
+	if not params or compare(getName(params.widget), "AurasButton") then
+		if aurasShow then  --isVisible(getChild(panelForm, "Auras0"))
+			hideAuras()
+		else
+			showAuras()
+		end
+		updatePanel()
+	end
+end
+
+local function OnRaidFilter(params)
+	for i = 1, 4 do
+		if equals(params.widget, wtPartyButtons[i]) then
+			raid_filter[i] = not raid_filter[i]
+			initRaidFilter()
+			save("raid_filter", raid_filter)
+		end
+	end
+	updateInfo()
+	updateBars()
+end
+
+--------------------------------------------------------------------------------
+-- AOPanelMod
+--------------------------------------------------------------------------------
+
+function OnEventAOPanelButtonLeftClick(params)
+	if params.sender=="Healer" then
+		swap(panelForm)
+	end
+end
+
+function OnEventAOPanelButtonRightClick(params)
+	if params.sender=="Healer" then
+		swap(buffForm)
+	end
+end
+
+function initPanelButton(params)
+	local value = { val=toWString("H") } 
+	local values = { header=value , ptype =  "button" , size = 30 } 
+	userMods.SendEvent("AOPANEL_SEND_ADDON", { name = "Healer" , sysName = "Healer" , param = values } )
+	hide(getChild(mainForm, "healerButton"))
+end
+
+--------------------------------------------------------------------------------
+-- ReadyCheck
+--------------------------------------------------------------------------------
+
+function OnReadyCheckStarted(params)
+	readyCheckMode=true
+	readyCheck=raid.GetReadyCheckInfo() or group.GetReadyCheckInfo()
+end
+
+function OnReadyCheckEnded(params)
+	readyCheckMode=false
+end
+
+function OnReadyCheckChanged(params)
+	readyCheck=raid.GetReadyCheckInfo() or group.GetReadyCheckInfo()
+end
+
+--------------------------------------------------------------------------------
+-- INITIALIZATION
+--------------------------------------------------------------------------------
+
+function InitIcons()
+	texIcons["DRUID"] = common.GetAddonRelatedTexture("DruidIcon")
+	texIcons["MAGE"] = common.GetAddonRelatedTexture("MageIcon")
+	texIcons["PALADIN"] = common.GetAddonRelatedTexture("PaladinIcon")
+	texIcons["PRIEST"] = common.GetAddonRelatedTexture("PriestIcon")
+	texIcons["PSIONIC"] = common.GetAddonRelatedTexture("PsionicIcon")
+	texIcons["STALKER"] = common.GetAddonRelatedTexture("StalkerIcon")
+	texIcons["WARRIOR"] = common.GetAddonRelatedTexture("WarriorIcon")
+	texIcons["NECROMANCER"] = common.GetAddonRelatedTexture("NecromancerIcon")
+	texIcons["ENGINEER"] = common.GetAddonRelatedTexture("EngineerIcon")
+	texIcons["BARD"] = common.GetAddonRelatedTexture("BardIcon")
+	texIcons["UNKNOWN"] = common.GetAddonRelatedTexture("UnknownIcon")
+end
+
+function InitButtonTextures()
+	texParty[1] = common.GetAddonRelatedTexture("Party1")
+	texParty[2] = common.GetAddonRelatedTexture("Party2")
+	texParty[3] = common.GetAddonRelatedTexture("Party3")
+	texParty[4] = common.GetAddonRelatedTexture("Party4")
+end
+
+function InitCheckTextures()
+	texCheckState[0] = common.GetAddonRelatedTexture("Unknown")
+	texCheckState[1] = common.GetAddonRelatedTexture("True")
+	texCheckState[2] = common.GetAddonRelatedTexture("False")
+end
+
+function loadConfigBars(form)
+	setText(getChild(form, "EditLine1"), panelWidth)
+	setText(getChild(form, "EditLine2"), panelHeight)
+	setText(getChild(form, "EditLine4"), numBars)
+	setText(getChild(form, "EditLine5"), numGroup)
+	setText(getChild(form, "EditLine6"), testDistance)
+	
+	setLocaleText(getChild(form, "classColorModeButton"), classColorMode)
+	setLocaleText(getChild(form, "showGradientButton"), showGradient)
+	setLocaleText(getChild(form, "selectModeButton"), selectBeforeCast)
+	setLocaleText(getChild(form, "targetButton"), targetShow)
+	setLocaleText(getChild(form, "lastTargetButton"), lastTargetShow)
+	setLocaleText(getChild(form, "showManaButton"), showMana)
+	setLocaleText(getChild(form, "showEnergyButton"), showEnergy)
+	setLocaleText(getChild(form, "showShieldButton"), showShield)
+	setLocaleText(getChild(form, "showStandartRaidButton"), showStandartRaid)
+	setLocaleText(getChild(form, "showStandartPartyButton"), showStandartParty)
+	setLocaleText(getChild(form, "showClassIconButton"), showClassIcon)
+	setLocaleText(getChild(form, "showDistanceButton"), showDistance)
+	setLocaleText(getChild(form, "showProcentButton"), showProcent)
+	setLocaleText(getChild(form, "showArrowButton"), showArrow)
+	setLocaleText(getChild(form, "gorisontalModeButton"), gorisontalMode)
+	setLocaleText(getChild(form, "twoxtwoModeButton"), twoxtwoMode)
+end
+
+function initConfigBars()
+	local form=createWidget(nil, "ConfigBarsForm", "Form", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 440, 690, 360, 220)
+	priority(form, 5500)
+	hide(form)
+	local panel=createWidget(form, nil, "Panel")
+
+	setLocaleText(createWidget(form, "configBarsHeader", "TextView",  WIDGET_ALIGN_CENTER, nil, 250, 20, nil, 20))
+	setLocaleText(createWidget(form, "widthText", "TextView", nil, nil, 200, 25, 20, 50))
+	setLocaleText(createWidget(form, "heightText", "TextView", nil, nil, 200, 25, 20, 80))
+	setLocaleText(createWidget(form, "heightGroupText", "TextView", nil, nil, 200, 25, 20, 110))
+	setLocaleText(createWidget(form, "widthGroupText", "TextView", nil, nil, 200, 25, 20, 140))
+	setLocaleText(createWidget(form, "distanceText", "TextView", nil, nil, 200, 25, 20, 170))
+
+	createWidget(form, "EditLine1", "EditLine", nil, nil, 200, 25, 220, 50, nil, nil)
+	createWidget(form, "EditLine2", "EditLine", nil, nil, 200, 25, 220, 80, nil, nil)
+	createWidget(form, "EditLine4", "EditLine", nil, nil, 200, 25, 220, 110, nil, nil)
+	createWidget(form, "EditLine5", "EditLine", nil, nil, 200, 25, 220, 140, nil, nil)
+	createWidget(form, "EditLine6", "EditLine", nil, nil, 200, 25, 220, 170, nil, nil)
+
+	createWidget(form, "classColorModeButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 200)
+	createWidget(form, "showGradientButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 230)
+	createWidget(form, "selectModeButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 260)
+	createWidget(form, "targetButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 290)
+	createWidget(form, "lastTargetButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 320)
+	createWidget(form, "showManaButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 350)
+	createWidget(form, "showEnergyButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 380)
+	createWidget(form, "showShieldButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 410)
+	createWidget(form, "showStandartRaidButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 440)
+	createWidget(form, "showStandartPartyButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 470)
+	createWidget(form, "showClassIconButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 500)
+	createWidget(form, "showDistanceButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 530)
+	createWidget(form, "showProcentButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 560)
+	createWidget(form, "showArrowButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 590)
+	createWidget(form, "gorisontalModeButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 620)
+	createWidget(form, "twoxtwoModeButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 25, 20, 650)
+
+	setText(createWidget(form, "closeBarsButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_LOW, 20, 20, 20, 20), "x")
+	DnD:Init(form, panel, true)
+	addReaction("closeBarsButton", function () swap(form) end)
+	return form
+end
+
+function initConfigGroupBuffs()
+	local form=createWidget(nil, "ConfigGroupBuffsForm", "Form", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 550, 510, 550, 130)
+	priority(form, 5500)
+	hide(form)
+	local panel=createWidget(form, nil, "Panel")
+	setLocaleText(createWidget(form, "configGroupBuffsHeader", "TextView",  WIDGET_ALIGN_CENTER, nil, 250, 20, nil, 20))
+	setText(createWidget(form, "closeGroupBuffsButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_LOW, 20, 20, 20, 20), "x")
+
+	setLocaleText(createWidget(form, "widthText", "TextView", nil, nil, 200, 25, 20, 50))
+	setLocaleText(createWidget(form, "heightText", "TextView", nil, nil, 200, 25, 20, 80))
+	setLocaleText(createWidget(form, "sizeText", "TextView", nil, nil, 200, 25, 20, 110))
+	setLocaleText(createWidget(form, "targetText", "TextView", nil, nil, 200, 25, 20, 140))
+
+	createWidget(form, "EditLine1", "EditLine", nil, nil, 200, 25, 320, 50)
+	createWidget(form, "EditLine2", "EditLine", nil, nil, 200, 25, 320, 80)
+	createWidget(form, "EditLine3", "EditLine", nil, nil, 200, 25, 320, 110)
+	createWidget(form, "EditLine4", "EditLine", nil, nil, 200, 25, 320, 140)
+
+	setLocaleText(createWidget(form, "buffsFixButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 500, 25, 20, 170), true, true)
+	setLocaleText(createWidget(form, "saveGroupBuffsButton", "Button", WIDGET_ALIGN_CENTER, WIDGET_ALIGN_HIGH, 200, 30, nil, 30))
+
+	setLocaleText(createWidget(form, "addBuffsButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_HIGH, 130, 25, 20, 270))
+	createWidget(form, "EditLine5", "EditLine", nil, WIDGET_ALIGN_HIGH, 210, 25, 160, 270)
+
+	setLocaleText(createWidget(form, "configGroupBuffsId", "TextView",  WIDGET_ALIGN_LOW, WIDGET_ALIGN_HIGH, 30, 25, 20, 240))
+	setLocaleText(createWidget(form, "configGroupBuffsName", "TextView",  WIDGET_ALIGN_LOW, WIDGET_ALIGN_HIGH, 220, 25, 50, 240))
+	setLocaleText(createWidget(form, "configGroupBuffsTime", "TextView",  WIDGET_ALIGN_LOW, WIDGET_ALIGN_HIGH, 130, 25, 280, 240))
+	setLocaleText(createWidget(form, "configGroupBuffsCD", "TextView",  WIDGET_ALIGN_LOW, WIDGET_ALIGN_HIGH, 40, 25, 410, 240))
+	setLocaleText(createWidget(form, "configGroupBuffsBuff", "TextView",  WIDGET_ALIGN_LOW, WIDGET_ALIGN_HIGH, 50, 25, 450, 240))
+
+	createWidget(form, "container", "ScrollableContainer", WIDGET_ALIGN_BOTH, WIDGET_ALIGN_HIGH, nil, 200, 20, 50)
+
+	DnD:Init(form, panel, true)
+	return form
+end
+
+function loadConfigBuffs(form)
+	setText(getChild(form, "EditLine1"), buffName1)
+	setText(getChild(form, "EditLine2"), buffName2)
+	setText(getChild(form, "EditLine3"), buffName3)
+	setText(getChild(form, "EditLine4"), buffName4)
+	setText(getChild(form, "EditLine6"), avatarBuffsUpdateTime)
+end
+
+function initConfigBuffs()
+	local form=createWidget(nil, "ConfigBuffsForm", "Form", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 550, 400, 350, 130)
+	priority(form, 5500)
+	hide(form)
+	local panel=createWidget(form, nil, "Panel")
+	setLocaleText(createWidget(form, "configBuffsHeader", "TextView",  WIDGET_ALIGN_CENTER, nil, 250, 20, nil, 20))
+	setText(createWidget(form, "closeBuffsButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_LOW, 20, 20, 20, 20), "x")
+
+	createWidget(form, "EditLine1", "EditLine", nil, nil, 250, 25, 20, 50, nil, nil)
+	createWidget(form, "EditLine2", "EditLine", nil, nil, 250, 25, 280, 50, nil, nil)
+	createWidget(form, "EditLine3", "EditLine", nil, nil, 250, 25, 280, 80, nil, nil)
+	createWidget(form, "EditLine4", "EditLine", nil, nil, 250, 25, 20, 80, nil, nil)
+
+	setLocaleText(createWidget(form, "configBuffsHeader2", "TextView",  WIDGET_ALIGN_CENTER, nil, 300, 20, nil, 110))
+	
+	setLocaleText(createWidget(form, "updateTimeBuffsButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 250, 25, 20, 140))
+	createWidget(form, "EditLine6", "EditLine", nil, nil, 250, 25, 280, 140, nil, nil)
+
+	setLocaleText(createWidget(form, "addGroupBuffsButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 250, 25, 20, 180))
+	createWidget(form, "EditLine5", "EditLine", nil, nil, 250, 25, 280, 180)
+
+	createWidget(form, "container", "ScrollableContainer", WIDGET_ALIGN_BOTH, WIDGET_ALIGN_HIGH, nil, 180, 20, 20)
+
+	DnD:Init(form, panel, true)
+	addReaction("closeBuffsButton", function () swap(form) end)
+	return form
+end
+
+function initConfigControls()
+	local form=createWidget(nil, "ConfigControlsForm", "Form", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 350, 400, 100)
+	priority(form, 5500)
+	hide(form)
+	local panel=createWidget(form, nil, "Panel")
+	setLocaleText(createWidget(form, "configControlsHeader", "TextView",  WIDGET_ALIGN_CENTER, nil, 250, 20, nil, 20))
+	setText(createWidget(form, "closeControlsButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_LOW, 20, 20, 20, 20), "x")
+
+	createWidget(form, "container", "ScrollableContainer", nil, nil, 360, 250, 20, 40)
+	setLocaleText(createWidget(form, "addControlButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 130, 25, 20, 300))
+	createWidget(form, "EditLine1", "EditLine", nil, nil, 210, 25, 160, 300)
+
+	DnD:Init(form, panel, true)
+	addReaction("closeControlsButton", function () swap(form) end)
+	return form
+end
+
+function initConfigDebuffs()
+	local form=createWidget(nil, "ConfigDebuffsForm", "Form", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 350, 800, 100)
+	priority(form, 5500)
+	hide(form)
+	local panel=createWidget(form, nil, "Panel")
+	setLocaleText(createWidget(form, "configDebuffsHeader", "TextView",  WIDGET_ALIGN_CENTER, nil, 250, 20, nil, 20))
+	setText(createWidget(form, "closeDebuffsButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_LOW, 20, 20, 20, 20), "x")
+	createWidget(form, "container", "ScrollableContainer", nil, nil, 360, 250, 20, 40)
+	setLocaleText(createWidget(form, "addDebuffButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 130, 25, 20, 300))
+	createWidget(form, "EditLine1", "EditLine", nil, nil, 210, 25, 160, 300)
+	DnD:Init(form, panel, true)
+
+	addReaction("addDebuffButton", 	  function () addToTable(debuffs, form) end)
+	addReaction("closeDebuffsButton", function () swap(form) end)
+	return form
+end
+
+function initConfigMobs()
+	local form=createWidget(nil, "ConfigMobsForm", "Form", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 400, 350, 800, 450)
+	priority(form, 5500)
+	hide(form)
+	local panel=createWidget(form, nil, "Panel")
+	setLocaleText(createWidget(form, "configMobsHeader", "TextView",  WIDGET_ALIGN_CENTER, nil, 250, 20, nil, 20))
+	setText(createWidget(form, "closeMobsButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_LOW, 20, 20, 20, 20), "x")
+
+	createWidget(form, "container", "ScrollableContainer", nil, nil, 360, 250, 20, 40)
+	setLocaleText(createWidget(form, "addMobsButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 130, 25, 20, 300))
+	createWidget(form, "EditLine1", "EditLine", nil, nil, 210, 25, 160, 300)
+
+	DnD:Init(form, panel, true)
+	addReaction("closeMobsButton", function () swap(form) end)
+	return form
+end
+
+function initConfigProfiles()
+	local form=createWidget(nil, "configProfilesForm", "Form", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 600, 250, 800, 450)
+	priority(form, 5500)
+	hide(form)
+	local panel=createWidget(form, nil, "Panel")
+	setLocaleText(createWidget(form, "configProfilesHeader", "TextView",  WIDGET_ALIGN_CENTER, nil, 250, 20, nil, 20))
+	setText(createWidget(form, "closeProfilesButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_LOW, 20, 20, 20, 20), "x")
+
+	createWidget(form, "container", "ScrollableContainer", nil, nil, 560, 150, 20, 40)
+
+	setLocaleText(createWidget(form, "saveAsProfileButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 330, 25, 20, 200))
+	createWidget(form, "EditLine1", "EditLine", nil, nil, 210, 25, 360, 200)
+
+	DnD:Init(form, panel, true)
+	addReaction("closeProfilesButton", function () swap(form) end)
+	return form
+end
+
+function loadConfigForm(form)
+	setLocaleText(getChild(form, "shiftButton"), false, true)
+	setLocaleText(getChild(form, "ctrlButton"), false, true)
+	setLocaleText(getChild(form, "altButton"), false, true)
+	setLocaleText(getChild(form, "enemyButton"), false, true)
+	
+	setLocaleText(getChild(form, "priorButton"), priorityMode, true)
+	setLocaleText(getChild(form, "woundsShowButton"), woundsShow, true)
+	setLocaleText(getChild(form, "autoDebuffModeButton"), autoDebuffMode, true)
+end
+
+function setConfig()
+	loadConfigBars(configBarsForm)
+	loadConfigBuffs(configBuffsForm)
+	loadConfigForm(configForm)
+
+	showTable(debuffs, configDebuffsForm)
+	showTable(mobs, configMobsForm)
+	showTable(controls, configControlsForm)
+	showTable(avatarBuffsGroups, configBuffsForm)
+	showTable(profiles, configProfilesForm)
+	
+	showCurrentBinds()
+	
+	buffInfos={}
+end
+
+function initConfig()
+	setTemplateWidget(template)
+	configForm=createWidget(nil, "ConfigForm", "Form", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 600, 430, 200, 100)
+	hide(configForm)
+	priority(configForm, 5000)
+
+	local configPanel=createWidget(configForm, "Panel", "Panel")
+
+	setLocaleText(createWidget(configForm, "configHeader", "TextView",  WIDGET_ALIGN_CENTER, nil, 100, 20, nil, 20))
+	setText(createWidget(configForm, "closeButton", "Button", WIDGET_ALIGN_HIGH, WIDGET_ALIGN_LOW, 20, 20, 20, 20), "x")
+
+	setLocaleText(createWidget(configForm, "leftClick", "TextView", nil, nil, 150, 20, 120, 50))
+	createWidget(configForm, "EditLine1", "EditLine", nil, nil, 270, 20, 300, 50)
+
+	setLocaleText(createWidget(configForm, "rightClick", "TextView", nil, nil, 150, 20, 120, 80))
+	createWidget(configForm, "EditLine2", "EditLine", nil, nil, 270, 20, 300, 80)
+
+	createWidget(configForm, "shiftButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 80, 30, 20, 50)
+	createWidget(configForm, "ctrlButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 80, 30, 20, 80)
+	createWidget(configForm, "altButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 80, 30, 20, 110)
+	createWidget(configForm, "enemyButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 80, 30, 20, 140)
+
+	setLocaleText(createWidget(configForm, "barsButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 200, 25, 370, 180))
+	setLocaleText(createWidget(configForm, "buffsButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 200, 25, 370, 210))
+	setLocaleText(createWidget(configForm, "debuffsButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 200, 25, 370, 240))
+	setLocaleText(createWidget(configForm, "mobsButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 200, 25, 370, 270))
+	setLocaleText(createWidget(configForm, "controlsButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 200, 25, 370, 300))
+	setLocaleText(createWidget(configForm, "profilesButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 200, 25, 370, 330))
+
+	setLocaleText(createWidget(configForm, "saveButton", "Button", WIDGET_ALIGN_CENTER, WIDGET_ALIGN_HIGH, 200, 30, nil, 30))
+
+	setLocaleText(createWidget(configForm, "testSpellNameText", "TextView", nil, nil, 150, 20, 20, 180))
+	createWidget(configForm, "EditLine6", "EditLine", nil, nil, 170, 20, 180, 180)
+
+	setLocaleText(createWidget(configForm, "ressurectNameText", "TextView", nil, nil, 150, 20, 20, 210))
+	createWidget(configForm, "EditLine5", "EditLine", nil, nil, 170, 20, 180, 210)
+
+	createWidget(configForm, "priorButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 330, 25, 20, 240)
+	createWidget(configForm, "woundsShowButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 330, 25, 20, 270)
+	createWidget(configForm, "autoDebuffModeButton", "CheckBox", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 330, 25, 20, 300)
+
+	DnD:Init(configForm, configPanel, true)
+
+	configDebuffsForm=initConfigDebuffs()
+	configMobsForm=initConfigMobs()
+	configProfilesForm=initConfigProfiles()
+	configBarsForm=initConfigBars()
+	configControlsForm=initConfigControls()
+	configBuffsForm=initConfigBuffs()
+	configGroupBuffsForm=initConfigGroupBuffs()
+
+	addReaction("barsButton", function () swap(configBarsForm) end)
+	addReaction("mobsButton", function () swap(configMobsForm) end)
+	addReaction("controlsButton", function () swap(configControlsForm) end)
+	addReaction("buffsButton", function () swap(configBuffsForm) end)
+	addReaction("debuffsButton", function () swap(configDebuffsForm) end)
+	addReaction("profilesButton", function () swap(configProfilesForm) end)
+end
+
+function OnEventTalentsChanged()
+	local currentBuild=avatar.GetActiveBuild()
+	if activeBuild~=currentBuild then
+		loadProfile()
+		setConfig()
+		hide(configForm)
+		hide(configGroupBuffsForm)
+		--if locale["reloadedMessage"] then message(locale["reloadedMessage"]) end
+		activeBuild=currentBuild
+	end
+	clearCache()
+end
+
+function OnEventTrackAdded(params)
+	--message(objects.GetTrackInfo(params.id).playerName)
+end
+
+function init()
+	activeBuild=avatar.GetActiveBuild()
+	if not compare(common.GetLocalization(), "rus") then
+		debuffs={}
+		controls={}
+		mobs={}
+		--defaultRessurectNames={}
+		avatarBuffsGroups={}
+	end
+	template=createWidget(nil, "Template", "Template")
+	setTemplateWidget(template)
+
+	local button=createWidget(mainForm, "healerButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 100, 25, 300, 20)
+	setText(button, "Healer")
+	DnD:Init(button, button, true)
+		
+	
+	
+
+	--local button1=createWidget(mainForm, "hCDButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 100, 25, 300, 20)
+	--setText(button1, "hCD")
+	--DnD:Init(button1, button1, true)
+	--priority(createWidget(button1, "hSettingCDButton", "Button", WIDGET_ALIGN_LOW, WIDGET_ALIGN_LOW, 25, 25, 75, 0), 100)
+
+
+	buffForm=createWidget(nil, "BuffForm", "Buff")
+
+	loadProfile()
+	InitIcons()
+	InitCheckTextures()
+	InitButtonTextures()
+
+	common.RegisterEventHandler(OnEventSecondTimer, "EVENT_SECOND_TIMER")
+	common.RegisterEventHandler(OnEventRaidAppeared, "EVENT_RAID_APPEARED")
+	common.RegisterEventHandler(OnEventRaidDisappearred, "EVENT_RAID_DISAPPEARED")
+	common.RegisterEventHandler(OnEventGroupAppeared, "EVENT_GROUP_APPEARED")
+	common.RegisterEventHandler(OnEventGroupDisappearred, "EVENT_GROUP_DISAPPEARED")
+	common.RegisterEventHandler(OnEventUnitChanged, "EVENT_UNITS_CHANGED")
+	common.RegisterEventHandler(OnEventUnitHealthChanged, "EVENT_UNIT_HEALTH_CHANGED")
+	common.RegisterEventHandler(OnEventUnitHealthChanged, "EVENT_OBJECT_HEALTH_CHANGED")
+	common.RegisterEventHandler(OnEventUnitHealthChanged, "EVENT_UNIT_WOUNDS_COMPLEXITY_CHANGED")
+	common.RegisterEventHandler(OnEventAvatarTargetChanged, "EVENT_AVATAR_TARGET_CHANGED")
+	common.RegisterEventHandler(OnEventTalentsChanged, "EVENT_TALENTS_CHANGED")
+	common.RegisterEventHandler(OnEventAvatarDirChanged, "EVENT_AVATAR_DIR_CHANGED")
+
+	common.RegisterEventHandler(initPanelButton, "AOPANEL_START")
+	common.RegisterEventHandler(OnEventAOPanelButtonLeftClick, "AOPANEL_BUTTON_LEFT_CLICK")
+	common.RegisterEventHandler(OnEventAOPanelButtonRightClick, "AOPANEL_BUTTON_RIGHT_CLICK")
+	--common.RegisterEventHandler(OnEventInspectStarted, "EVENT_INSPECT_STARTED")
+	--common.RegisterEventHandler(OnEventTrackAdded, "EVENT_TRACK_ADDED")
+	--EVENT_AVATAR_TARGET_RECOMMENDED
+
+	common.RegisterEventHandler(OnEventObjectBuffAdded, "EVENT_OBJECT_BUFF_ADDED")
+	common.RegisterEventHandler(OnEventObjectBuffsChanged, "EVENT_OBJECT_BUFFS_CHANGED")
+	common.RegisterEventHandler(OnEventObjectBuffsElementChanged, "EVENT_OBJECT_BUFFS_ELEMENT_CHANGED")
+
+	common.RegisterEventHandler(OnEventActionResultSpecialSpell, "EVENT_ACTION_RESULT_SPECIAL_SPELL")
+
+	common.RegisterEventHandler(OnReadyCheckStarted, "EVENT_READY_CHECK_STARTED")
+	common.RegisterEventHandler(OnReadyCheckChanged, "EVENT_READY_CHECK_INFO_CHANGED")
+	common.RegisterEventHandler(OnReadyCheckEnded, "EVENT_READY_CHECK_ENDED")
+
+	common.RegisterEventHandler(OnEventChatMessage, "EVENT_CHAT_MESSAGE")
+	common.RegisterEventHandler(OnAddonHealthChanged, "EVENT_ADDON_HEALTH_CHANGED")
+
+	startTimer("avatarBuffsTimer", "EVENT_AVATAR_BUFFS_TIMER", avatarBuffsUpdateTime)
+	
+	common.RegisterEventHandler(updateAvatarBuffs, "EVENT_AVATAR_BUFFS_TIMER")
+
+	common.RegisterReactionHandler(OnLeftClick, "OnLeftClick")
+	common.RegisterReactionHandler(OnRightClick, "OnRightClick" )
+	common.RegisterReactionHandler(OnWheelUp, "OnWheelUp" )
+	common.RegisterReactionHandler(OnWheelDown, "OnWheelDown" )
+	common.RegisterReactionHandler(OnPointing, "OnPointing" )
+
+	common.RegisterReactionHandler(OnShowPanel, "ShowTopPanel")
+	common.RegisterReactionHandler(OnShowPanel, "ShowBuffPanel")
+	common.RegisterReactionHandler(OnRaidFilter, "OnRaidFilter")
+	common.RegisterReactionHandler(OnConfigChange, "OnConfigChange")
+	common.RegisterReactionHandler(OnAurasChange, "OnAurasChange")
+	common.RegisterReactionHandler(OnTestShop, "OnTestShop")
+	common.RegisterReactionHandler(OnShopChange, "OnShopChange")
+	common.RegisterReactionHandler(OnCheckChange, "OnCheckChange")
+	common.RegisterReactionHandler(OnAssertChange, "OnAssertChange")
+	common.RegisterReactionHandler(saveProfile, "execute")
+	common.RegisterReactionHandler(moveModeClick, "addClick")
+
+	initConfig()
+	setConfig()
+
+	panelForm=common.AddonCreateChildForm("Panel")
+	
+	addReaction("healerButton", function () swap(panelForm) end)
+	
+	wtTopPanel=getChild(panelForm, "TopPanel")
+	DnD:Init(panelForm, wtTopPanel, true)
+
+	resize(wtTopPanel, topPanelWidth, nil)
+
+	initBars()
+	initAuras()
+
+	hide(getChild(panelForm, "AddBar"))
+
+	updateFunc=updatePanel
+
+	hide(getChild(wtTopPanel, "PartyButton"))
+	setTemplateWidget(wtTopPanel)
+	for i = 1, 4 do
+		wtPartyButtons[i]=createWidget(wtTopPanel, nil, "PartyButton", nil, nil, nil, nil, (i-1)*23+27, nil, nil, nil)  --- Принадлежность топ панели
+		setBackgroundTexture(wtPartyButtons[i], texParty[i])
+		if i~=1 then hide(wtPartyButtons[i]) end
+	end
+
+	initRaidFilter()
+
+	setFade(wtTopPanel, 0.3)
+end
+
+--------------------------------------------------------------------------------
+--xpcall(init, message)
+if (avatar.IsExist()) then
+	init()
+else
+	common.RegisterEventHandler(init, "EVENT_AVATAR_CREATED")
+end
+--------------------------------------------------------------------------------
